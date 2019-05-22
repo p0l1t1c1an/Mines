@@ -24,12 +24,12 @@ That's how minesweeper works.
 
 
 Command to compile the code in Linux: 
-gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c graphic_main.c
+  gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c graphic_main.c
 
 (I believe in FreeBSD remove the 'g' from gcc to be cc)
 
 To run the compiled code:
-./a.out
+  ./a.out
 
 
 Known Problems:
