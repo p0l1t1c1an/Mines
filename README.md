@@ -1,7 +1,7 @@
 # Mines
 Minesweeper built in C using GTK+ 3.0 as the gui.
 This was initially a high school project for a CS course so don't judge.
-So far it only works in Unix based systems and it looks very wierd in i3wm.
+So far it only works in Unix based systems and it looks very weird in i3wm.
 つ´Д`)つ
 
 
