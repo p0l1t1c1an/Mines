@@ -1,7 +1,8 @@
 # Mines
 Minesweeper built in C using GTK+ 3.0 as the gui.
 This was initially a high school project for a CS course so don't judge.
-So far it only works in Unix based systems and it looks very weird in i3wm.
+So far it only works in Unix based systems with GTK and it looks very weird in i3wm.
+It has been tested in Linux and FreeBSD.
 つ´Д`)つ
 
 
@@ -14,7 +15,7 @@ You can restart the game by clicking the face at the top of the window.
 You win by revealing every tile that is not a bomb.
 
 Secret move:
-Middle click!
+Middle click! Many people don't know about this move in minesweeper.
 You middle click an already revealed tile to reveal everything around it that isn't flagged.
 This only works if there are the same amount of flags around it as the number of bombs around it.
 So if a 3 is shown, you need 3 flags around the space to middle click. 
@@ -37,7 +38,6 @@ Known Problems:
 - Needs a menu to change the size or board and number of bombs
 - Generally, everything that isn't the board looks bad
 - Needs a way to style the graphics. I think it uses CSS and I don't know how to use that for this.
+- Format changes when the timer reaches over one thousand seconds
 - Doesn't work in Windows and I don't know how to setup or use gtk in Windows.
-- There are probably many efficiency errors that both know and don't know about.
-
-
+- There are probably efficiency errors that are both known and unknown. \_(ツ)_/
