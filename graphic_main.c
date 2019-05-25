@@ -1,7 +1,8 @@
 #include "Board.h"
 //#include <time.h>
 
-#define directory getcwd(NULL, 0)
+extern char *set_directory(void);
+#define directory set_directory()
 
 #define images "/Images/"
 #define smile "Smile.svg"
@@ -22,6 +23,7 @@ static int unflagged_mines, selected_count;
 
 static void btn_press_callback(GtkWidget *btn, GdkEventButton *event, gpointer user_data);
 static void middle_click(GtkWidget *btn, GdkEventButton *event, gpointer user_data);
+
 
 static void lose(){
 	if(!is_destroyed){
@@ -165,13 +167,14 @@ static void check_win(){
 }
 
 static gboolean timer_increase(gpointer data){
-	char count[4];
+	char *count = malloc(sizeof(char));
 	GtkWidget *timer = (GtkWidget *)data;
 	milliseconds = milliseconds + 100;
 	sprintf(count, "%d", milliseconds/1000);
 	gtk_label_set_text(GTK_LABEL(timer), count);
 	gtk_widget_show(timer);
 	check_win();
+	free(count);
 	return true;
 }
 
@@ -223,7 +226,7 @@ static void restart(){
 	timeout_add(100, timer_increase, timer);
 
 	//printf("String\n");
-	char *dir = malloc(strlen(directory) + strlen(images) + strlen(shades) + 1);
+	char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile) + 1);
     strcpy(dir, directory);
 	strcat(dir, images);
     strcat(dir, smile);
@@ -253,11 +256,14 @@ static void restart(){
 }
 
 static void activate (GtkApplication* app, gpointer user_data){
-  char *dir = malloc(strlen(directory) + strlen(images) + strlen(shades) + 1);
+
+  char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile) + 1);
 
   strcpy(dir, directory);
   strcat(dir, images);
   strcat(dir, smile);
+
+  printf("%s\n", dir);
 
   window = gtk_application_window_new(app);
   grid = gtk_grid_new();
@@ -278,10 +284,11 @@ static void activate (GtkApplication* app, gpointer user_data){
   g_signal_connect (G_OBJECT(restart_ebox),"button-press-event",
 					G_CALLBACK (restart), NULL);
   gtk_grid_attach(GTK_GRID(top_grid), timer, 0, 0, 1, 1);
-  gtk_grid_attach(GTK_GRID(top_grid), restart_ebox, length/2, 0, 3, 1);
+  gtk_grid_attach(GTK_GRID(top_grid), restart_ebox, length/4 - 1, 0, 2, 1);
   gtk_grid_attach(GTK_GRID(top_grid), counter, length-1, 0, 1, 1);
   gtk_widget_set_halign(top_grid, GTK_ALIGN_CENTER);
-  gtk_grid_set_column_spacing(GTK_GRID(top_grid), 10);
+  gtk_grid_set_column_homogeneous (GTK_GRID(top_grid), true);
+//  gtk_grid_set_column_spacing(GTK_GRID(top_grid), 10);
   game_board = board_ctor(game_board, length, height, bomb_num);
   restart();
 
@@ -293,12 +300,15 @@ static void activate (GtkApplication* app, gpointer user_data){
   gtk_container_add(GTK_CONTAINER(window), vbox);
 
   gtk_widget_show_all(GTK_WIDGET(window));
+
 }
 
-int main (int argc, char **argv){
+int main(int argc, char **argv){
+
+  printf("%s\n", directory);
   height = 20;
   length = 20;
-  bomb_num = 70;
+  bomb_num = 75;
   selected_count = 0;
   unflagged_mines = bomb_num;
   srand(time(0));
@@ -310,6 +320,6 @@ int main (int argc, char **argv){
   status = g_application_run (G_APPLICATION (app), argc, argv);
 
   g_object_unref (app);
-  free_the_board(game_board);
+  //free_the_board(game_board);
   return status;
 }

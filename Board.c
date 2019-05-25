@@ -1,11 +1,15 @@
 #include "Board.h"
 #include <time.h>
 
-#define directory getcwd(NULL, 0)
+extern char *set_directory(void);
+#define directory set_directory()
+
+//#define directory getcwd(NULL, 0)
 #define images "/Images/"
 #define bomb "Mine.svg"
 #define wrong_flag "Wrong.svg"
 #define face "Face.svg" // would be confusing to call it tile
+
 
 static void ctor_each_tile(board *me, int x, int y){
 	for(int i = 0; i < y; i++){

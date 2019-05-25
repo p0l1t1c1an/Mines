@@ -4,12 +4,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
+#include <libgen.h>
 
 #define flag "Flag.svg"
 #define face "Face.svg" // would be confusing to call it tile
 
-#define directory getcwd(NULL, 0)
+//#define directory getcwd(NULL, 0)
 #define images "/Images/"
 
 #define zero "Zero.svg"
@@ -24,6 +24,33 @@
 
 static char *num_faces[9] = {zero, one, two, three, four, five, six, seven, eight};
 
+char *set_directory(void);
+#define directory set_directory()
+
+
+char *set_directory(void){
+	char path[500] = {0};
+	int dest_len = 500;
+
+	readlink("/proc/self/exe", path, dest_len);
+	int i = strlen(path);
+
+	//putchar(path[i-1]);
+	while(path[i-1] != '/'){
+		//printf("\n%d", i);
+	 	i--;
+	}
+	char temp[i-1];
+	for(int j = 0; j < i -1; j++){
+		temp[j] = path[j];
+	}
+	temp[i-1] = '\0';
+	char *dir = malloc(strlen(temp));
+	strcpy (dir, temp);
+	//printf("%s\n%s\n", dir, temp);
+	return dir;
+}
+
 static void selected(tile *me, GtkWidget *ebox){
 	GtkWidget *image;
 	GList *children, *iter;
@@ -37,7 +64,7 @@ static void selected(tile *me, GtkWidget *ebox){
 	int img_len = strlen(images);
 	int num_len = strlen(num_faces[me->num_bombs]);
 
-	dir = malloc( dir_len + img_len + num_len + 1 ); // Add 1 for null terminator.
+	dir = malloc(dir_len + img_len + num_len + 1 ); // Add 1 for null terminator.
 	strcpy(dir, directory);
 	strcat(dir, images);
 	strcat(dir, num_faces[me->num_bombs]);
@@ -45,6 +72,7 @@ static void selected(tile *me, GtkWidget *ebox){
 	image = gtk_image_new_from_file(dir);
 	gtk_container_add(GTK_CONTAINER(ebox), image);
 	free(dir);
+
 	//gtk_widget_show(GTK_WIDGET(ebox));
 }
 
