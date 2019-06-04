@@ -25,13 +25,22 @@ That's how minesweeper works.
 
 
 Command to compile the code in Linux: 
-  gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c graphic_main.c
+  
+``gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c graphic_main.c``
 
 (I believe in FreeBSD remove the 'g' from gcc to be cc)
 
 To run the compiled code:
-  ./a.out
+  
+`./a.out`
+  
+To create a symlink of the executable so that the game can be run as Bash command (Only tested in Linux):
+  
+`ln -s /path_to_executable/a.out /usr/local/bin/mines`
 
+Then you can run the game by typing the following into the terminal and/ or dmenu:
+
+`mines`
 
 Known Problems:
 - Need to comment my program
@@ -39,4 +48,4 @@ Known Problems:
 - Generally, everything that isn't the board looks bad
 - Needs a way to style the graphics. I think it uses CSS and I don't know how to use that for this.
 - Doesn't work in Windows and I don't know how to setup or use gtk in Windows.
-- There are probably efficiency errors that are both known and unknown. \_(ツ)_/
+- There are probably efficiency errors that are both known and unknown. \\_(ツ)_/
