@@ -96,7 +96,7 @@ static void select_tile(board *me, int x, int y){
 }
 
 static void update_counter(int num){
-	char count[3];
+	char count[3];						// should never excede 3 digets
 	sprintf(count, "%d", num);
 	gtk_label_set_text(GTK_LABEL(counter), count);
 	gtk_widget_show(counter);
@@ -160,12 +160,6 @@ static void btn_press_callback(GtkWidget *btn, GdkEventButton *event, gpointer u
 	gtk_widget_show_all(GTK_WIDGET(window));
 }
 
-static void check_win(){
-	if(selected_count >= (height * length - bomb_num)){
-		win();
-	}
-}
-
 static gboolean timer_increase(gpointer data){
 	char *count = malloc(sizeof(char));
 	GtkWidget *timer = (GtkWidget *)data;
@@ -173,42 +167,44 @@ static gboolean timer_increase(gpointer data){
 	sprintf(count, "%d", milliseconds/1000);
 	gtk_label_set_text(GTK_LABEL(timer), count);
 	gtk_widget_show(timer);
-	check_win();
+	if(selected_count >= (height * length - bomb_num)){
+		win();
+	}
 	free(count);
 	return true;
 }
 
 void free_the_board(board *me){
-for (int i = 0; i < height; i++) {
-	for (int j = 0; j < length; j++) {
-		free(me->tiles[i][j]->p_Table);
-		free(me->tiles[i][j]);
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < length; j++) {
+			free(me->tiles[i][j]->p_Table);
+			free(me->tiles[i][j]);
+		}
+		free(me->tiles[i]);
 	}
-	free(me->tiles[i]);
-}
 	free(me->p_Table);
 	free(me);
 }
 
 guint timeout_add_full (gint priority, guint32 interval, GSourceFunc function, gpointer data,
                         GDestroyNotify notify){
-  guint id;
-  g_return_val_if_fail (function != NULL, 0);
+	guint id;
+	g_return_val_if_fail (function != NULL, 0);
 
-  source = g_timeout_source_new (interval);
-  is_destroyed = false;
+	source = g_timeout_source_new (interval);
+	is_destroyed = false;
 
-  if (priority != G_PRIORITY_DEFAULT) g_source_set_priority (source, priority);
+	if (priority != G_PRIORITY_DEFAULT) g_source_set_priority (source, priority);
 
-  g_source_set_callback (source, function, data, notify);
-  id = g_source_attach (source, NULL);
-  g_source_unref (source);
+	g_source_set_callback (source, function, data, notify);
+	id = g_source_attach (source, NULL);
+	g_source_unref (source);
 
-  return id;
+	return id;
 }
 
 guint timeout_add (guint32 interval, GSourceFunc function, gpointer data){
-  return timeout_add_full (G_PRIORITY_DEFAULT, interval, function, data, NULL);
+	return timeout_add_full (G_PRIORITY_DEFAULT, interval, function, data, NULL);
 }
 
 static void restart(){
@@ -257,69 +253,71 @@ static void restart(){
 
 static void activate (GtkApplication* app, gpointer user_data){
 
-  char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile) + 1);
+	char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile) + 1);
 
-  strcpy(dir, directory);
-  strcat(dir, images);
-  strcat(dir, smile);
+	strcpy(dir, directory);
+	strcat(dir, images);
+	strcat(dir, smile);
 
-  printf("%s\n", dir);
+///	printf("%s\n", dir);
 
-  window = gtk_application_window_new(app);
-  grid = gtk_grid_new();
-  counter = gtk_label_new(NULL);
-  update_counter(unflagged_mines);
+	window = gtk_application_window_new(app);
+	grid = gtk_grid_new();
+	counter = gtk_label_new(NULL);
+	update_counter(unflagged_mines);
 
-  timer = gtk_label_new("0");
-  timeout_add(100, timer_increase, timer);
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *top_grid = gtk_grid_new();
-  restart_ebox = gtk_event_box_new();
-  GtkWidget *smile_img = gtk_image_new_from_file(dir);
+	timer = gtk_label_new("0");
+	gtk_widget_set_size_request(timer, 35, 10);
+	timeout_add(100, timer_increase, timer);
 
-  free(dir);
+	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	GtkWidget *top_grid = gtk_grid_new();
+	restart_ebox = gtk_event_box_new();
+	GtkWidget *smile_img = gtk_image_new_from_file(dir);
 
-  gtk_container_add(GTK_CONTAINER(restart_ebox), smile_img);
-  g_signal_connect (G_OBJECT(restart_ebox),"button-press-event",
-					G_CALLBACK (restart), NULL);
-  gtk_grid_attach(GTK_GRID(top_grid), timer, 0, 0, 1, 1);
-  gtk_grid_attach(GTK_GRID(top_grid), restart_ebox, length/4 - 1, 0, 2, 1);
-  gtk_grid_attach(GTK_GRID(top_grid), counter, length-1, 0, 1, 1);
-  gtk_widget_set_halign(top_grid, GTK_ALIGN_CENTER);
-  gtk_grid_set_column_homogeneous (GTK_GRID(top_grid), true);
-//  gtk_grid_set_column_spacing(GTK_GRID(top_grid), 10);
-  game_board = board_ctor(game_board, length, height, bomb_num);
-  restart();
+	free(dir);
 
-//gtk_window_set_default_size(GTK_WINDOW(window), 500, 550);
-  gtk_window_set_resizable(GTK_WINDOW(window), false);
-  gtk_window_set_title(GTK_WINDOW (window), "Minesweeper");
-  gtk_box_pack_start(GTK_BOX(vbox), top_grid, true, false, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), grid, true, false, 0);
-  gtk_container_add(GTK_CONTAINER(window), vbox);
+	gtk_container_add(GTK_CONTAINER(restart_ebox), smile_img);
+	g_signal_connect (G_OBJECT(restart_ebox),"button-press-event",
+					G_CALLBACK(restart), NULL);
+	gtk_grid_attach(GTK_GRID(top_grid), timer, 0, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(top_grid), restart_ebox, length/4 , 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(top_grid), counter, length/2, 0, 1, 1);
+	gtk_widget_set_halign(top_grid, GTK_ALIGN_CENTER);
+	gtk_grid_set_column_homogeneous(GTK_GRID(top_grid), true);
+//	gtk_grid_set_column_spacing(GTK_GRID(top_grid), 10);
+	game_board = board_ctor(game_board, length, height, bomb_num);
+	restart();
 
-  gtk_widget_show_all(GTK_WIDGET(window));
+	//gtk_window_set_default_size(GTK_WINDOW(window), 500, 550);
+	gtk_window_set_resizable(GTK_WINDOW(window), false);
+	gtk_window_set_title(GTK_WINDOW (window), "Minesweeper");
+	gtk_box_pack_start(GTK_BOX(vbox), top_grid, true, false, 5);
+	gtk_box_pack_start(GTK_BOX(vbox), grid, true, false, 0);
+	gtk_container_add(GTK_CONTAINER(window), vbox);
+
+	gtk_widget_show_all(GTK_WIDGET(window));
 
 }
 
 int main(int argc, char **argv){
 
-  printf("%s\n", directory);
-  height = 20;
-  length = 20;
-  bomb_num = 75;
-  selected_count = 0;
-  unflagged_mines = bomb_num;
-  srand(time(0));
-  GtkApplication *app;
-  int status;
+	//printf("%s\n", directory);
+	height = 20;
+	length = 20;
+	bomb_num = 75;
+	selected_count = 0;
+	unflagged_mines = bomb_num;
+	srand(time(0));
+	GtkApplication *app;
+	int status;
 
-  app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
-  g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
-  status = g_application_run (G_APPLICATION (app), argc, argv);
+	app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
+	g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+	status = g_application_run (G_APPLICATION (app), argc, argv);
 
-  g_object_unref (app);
-  //free_the_board(game_board);
-  return status;
+	g_object_unref (app);
+	//free_the_board(game_board);
+	return status;
 }

@@ -38,6 +38,5 @@ Known Problems:
 - Needs a menu to change the size or board and number of bombs
 - Generally, everything that isn't the board looks bad
 - Needs a way to style the graphics. I think it uses CSS and I don't know how to use that for this.
-- Format changes when the timer reaches over one thousand seconds
 - Doesn't work in Windows and I don't know how to setup or use gtk in Windows.
 - There are probably efficiency errors that are both known and unknown. \_(ツ)_/
