@@ -79,7 +79,7 @@ static void setup_num(board *me, int x, int y){
 					bomb_count++;
 				}if ((j < x -1) && me->tiles[i][j+1]->is_bomb){
 					bomb_count++;
-				}if ((i < y -1 && j < y -1) && me->tiles[i+1][j+1]->is_bomb){
+				}if ((i < y -1 && j < x -1) && me->tiles[i+1][j+1]->is_bomb){
 					bomb_count++;
 				}
 				me->tiles[i][j]->num_bombs = bomb_count;
@@ -95,14 +95,12 @@ static void initialize(board *me, int x, int y, int num_bombs){
 	for(int i = 0; i < y; i++){
 		for(int j = 0; j < x; j++){
 			if(count >= num_bombs){
-				goto HERE;
+				return;
 			}
 			me->tiles[i][j]->p_Table->p_set_bomb(me->tiles[i][j]);
 			count++;
 		}
 	}
-	HERE:
-	setup_num(me, x, y);
 }
 
 static void reset_grid_pos(int x, int y, GtkWidget *grid){
@@ -113,6 +111,7 @@ static void reset_grid_pos(int x, int y, GtkWidget *grid){
 		strcpy(dir, directory);
 		strcat(dir, images);
 		strcat(dir, face);
+
 		image = gtk_image_new_from_file(dir);
 		gtk_container_add(GTK_CONTAINER(ebox), image);
 		gtk_grid_attach(GTK_GRID(grid), ebox, x, y, 1, 1);
@@ -137,13 +136,10 @@ static void reset_tiles(board *me, int x, int y, int new_x, int new_y, int new_b
 			me->tiles[i][j] = (tile *)malloc(sizeof(tile ));
 		}
 	}
-
 	initialize(me, new_x, new_y, new_bombs);
-
 }
 
 static void new_game(board *me, int x, int y, int new_x, int new_y, int new_bombs, GtkWidget *grid){
-
 	GList *children, *iter;
 
 	children = gtk_container_get_children(GTK_CONTAINER(grid));
@@ -155,6 +151,7 @@ static void new_game(board *me, int x, int y, int new_x, int new_y, int new_bomb
 		reset_tiles(me, x, y, new_x, new_y, new_bombs);
 		x = new_x;
 		y = new_y;
+		me->bomb_amount = new_bombs;
 	}
 
 	for(int i = 0; i < y; i++){
