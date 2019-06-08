@@ -88,10 +88,27 @@ static void setup_num(board *me, int x, int y){
 	}
 }
 
+static void initialize(board *me, int x, int y, int num_bombs){
+	ctor_each_tile(me, x, y);
+	int count = 0;
+	//printf("%d\n", num_bombs);
+	for(int i = 0; i < y; i++){
+		for(int j = 0; j < x; j++){
+			if(count >= num_bombs){
+				goto HERE;
+			}
+			me->tiles[i][j]->p_Table->p_set_bomb(me->tiles[i][j]);
+			count++;
+		}
+	}
+	HERE:
+	setup_num(me, x, y);
+}
+
 static void reset_grid_pos(int x, int y, GtkWidget *grid){
 		GtkWidget *ebox = gtk_event_box_new();
 		GtkWidget *image;
-		char *dir = malloc(strlen(directory) + strlen(images) + strlen(bomb) + 1 ); // Add 1 for null terminator.
+		char *dir = malloc(strlen(directory) + strlen(images) + strlen(face) + 1 ); // Add 1 for null terminator.
 
 		strcpy(dir, directory);
 		strcat(dir, images);
@@ -103,7 +120,29 @@ static void reset_grid_pos(int x, int y, GtkWidget *grid){
 		free(dir);
 }
 
-static void new_game(board *me, int x, int y, GtkWidget *grid){
+static void reset_tiles(board *me, int x, int y, int new_x, int new_y, int new_bombs){
+	for (int i = 0; i < y; i++) {
+		for (int j = 0; j < x; j++) {
+			free(me->tiles[i][j]->p_Table);
+			free(me->tiles[i][j]);
+		}
+		free(me->tiles[i]);
+	}
+	free(me->tiles);
+
+	me->tiles = (tile ***)malloc(new_y * sizeof(tile **));
+	for (int i = 0; i < new_y; i++){
+		me->tiles[i] = (tile **)malloc(new_x * sizeof(tile *));
+		for (int j = 0; j < new_x; j++){
+			me->tiles[i][j] = (tile *)malloc(sizeof(tile ));
+		}
+	}
+
+	initialize(me, new_x, new_y, new_bombs);
+
+}
+
+static void new_game(board *me, int x, int y, int new_x, int new_y, int new_bombs, GtkWidget *grid){
 
 	GList *children, *iter;
 
@@ -111,6 +150,12 @@ static void new_game(board *me, int x, int y, GtkWidget *grid){
 	for(iter = children; iter != NULL; iter = g_list_next(iter))
 						gtk_widget_destroy(GTK_WIDGET(iter->data));
 	g_list_free(children);
+
+	if(x != new_x || y != new_y || me->bomb_amount != new_bombs){
+		reset_tiles(me, x, y, new_x, new_y, new_bombs);
+		x = new_x;
+		y = new_y;
+	}
 
 	for(int i = 0; i < y; i++){
     	for(int j = 0; j < x; j++){
@@ -124,22 +169,6 @@ static void new_game(board *me, int x, int y, GtkWidget *grid){
 			reset_grid_pos(j, i, grid);
 		}
 	}
-	setup_num(me, x, y);
-}
-
-static void initialize(board *me, int x, int y, int num_bombs){
-	ctor_each_tile(me, x, y);
-	int count = 0;
-	for(int i = 0; i < y; i++){
-		for(int j = 0; j < x; j++){
-			if(count >= num_bombs){
-				goto HERE;
-			}
-			me->tiles[i][j]->p_Table->p_set_bomb(me->tiles[i][j]);
-			count++;
-		}
-	}
-	HERE:
 	setup_num(me, x, y);
 }
 

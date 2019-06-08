@@ -7,14 +7,20 @@ extern char *set_directory(void);
 #define images "/Images/"
 #define smile "Smile.svg"
 #define shades "Shades.svg"
+#define menu "Menu.svg"
 
 static int height, length, bomb_num;
+static int new_H, new_L, new_B;
 static board *game_board;
 static GtkWidget *grid;
 static GtkWidget *window;
 static GtkWidget *counter;
 static GtkWidget *timer;
 static GtkWidget *restart_ebox;
+static GtkWidget *vbox_for_slide;
+static GtkWidget *leng_slide;
+static GtkWidget *heig_slide;
+static GtkWidget *bomb_slide;
 static GSource *source;
 
 static bool is_destroyed = false;
@@ -103,6 +109,7 @@ static void update_counter(int num){
 }
 
 static void middle_click(GtkWidget *btn, GdkEventButton *event, gpointer user_data){
+	(void) btn;
 	tile *me = user_data;
 	int x = me->x_pos;
 	int y = me->y_pos;
@@ -128,7 +135,12 @@ static void middle_click(GtkWidget *btn, GdkEventButton *event, gpointer user_da
 			}
 			GtkWidget *og_ebox = gtk_grid_get_child_at(GTK_GRID(grid), x, y);
 			g_signal_handlers_block_by_func(og_ebox ,G_CALLBACK (middle_click), me);
+
+			bool visible = gtk_widget_get_visible(vbox_for_slide);
 			gtk_widget_show_all(GTK_WIDGET(window));
+			if(!visible){
+				gtk_widget_hide(vbox_for_slide);
+			}
 		}
 		//printf("Middle\n");
 	}
@@ -136,6 +148,7 @@ static void middle_click(GtkWidget *btn, GdkEventButton *event, gpointer user_da
 
 
 static void btn_press_callback(GtkWidget *btn, GdkEventButton *event, gpointer user_data){
+	(void) btn;
 	tile *me = user_data;
     if (event->type == GDK_BUTTON_PRESS  &&  event->button == 3){		//3 is right mouse btn
 		flag_tile(me);
@@ -157,7 +170,11 @@ static void btn_press_callback(GtkWidget *btn, GdkEventButton *event, gpointer u
 			//printf("Left\n");
 		}
 	}
+	bool visible = gtk_widget_get_visible(vbox_for_slide);
 	gtk_widget_show_all(GTK_WIDGET(window));
+	if(!visible){
+		gtk_widget_hide(vbox_for_slide);
+	}
 }
 
 static gboolean timer_increase(gpointer data){
@@ -182,6 +199,7 @@ void free_the_board(board *me){
 		}
 		free(me->tiles[i]);
 	}
+	free(me->tiles);
 	free(me->p_Table);
 	free(me);
 }
@@ -210,8 +228,6 @@ guint timeout_add (guint32 interval, GSourceFunc function, gpointer data){
 static void restart(){
 	milliseconds = 0;
 	selected_count = 0;
-	unflagged_mines = bomb_num;
-	update_counter(unflagged_mines);
 
 	if(!is_destroyed){
 		//printf("Destroy\n");
@@ -220,6 +236,11 @@ static void restart(){
 	}
 	//printf("Timeout\n");
 	timeout_add(100, timer_increase, timer);
+
+	new_L = gtk_range_get_value(GTK_RANGE(leng_slide));
+	new_H = gtk_range_get_value(GTK_RANGE(heig_slide));
+	new_B = gtk_range_get_value(GTK_RANGE(bomb_slide));
+	//printf("%d, %d, %d\n", new_L, new_H, new_B);
 
 	//printf("String\n");
 	char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile) + 1);
@@ -236,7 +257,14 @@ static void restart(){
 	free(dir);
 
 	game_board->end = false;
-	game_board->p_Table->p_new_game(game_board, length, height, grid);
+	game_board->p_Table->p_new_game(game_board, length, height, new_L, new_H, new_B, grid);
+
+	length = new_L;
+	height = new_H;
+	bomb_num = new_B;
+	unflagged_mines = bomb_num;
+	update_counter(unflagged_mines);
+
 	for(int i = 0; i < height; i++){
 	   for(int j = 0; j < length; j++){
 		   GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(grid), j, i);
@@ -248,18 +276,49 @@ static void restart(){
 				  							game_board->tiles[i][j]);
 		}
 	}
+	bool visible = gtk_widget_get_visible(vbox_for_slide);
 	gtk_widget_show_all(GTK_WIDGET(window));
+	if(!visible){
+		gtk_widget_hide(vbox_for_slide);
+	}
 }
 
-static void activate (GtkApplication* app, gpointer user_data){
+static void set_visiblity(){
+	bool visible = gtk_widget_get_visible(vbox_for_slide);
+	if(visible){
+		gtk_widget_set_visible(vbox_for_slide, false);
+	}
+	else{
+		gtk_widget_set_visible(vbox_for_slide, true);
+	}
+}
+
+static gboolean kill_app( gpointer user_data){
+	(void) user_data;
+	free_the_board(game_board);
+	gtk_window_close(GTK_WINDOW(window));
+	return false;
+}
+
+static void activate(GtkApplication* app, gpointer user_data){
+	height = 25;
+	length = 25;
+	bomb_num = 120;
+	new_H = height;
+	new_L = length;
+	new_B = bomb_num;
+	selected_count = 0;
+	unflagged_mines = bomb_num;
+	srand(time(0));
+
+	(void) user_data;
 
 	char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile) + 1);
-
 	strcpy(dir, directory);
 	strcat(dir, images);
 	strcat(dir, smile);
 
-///	printf("%s\n", dir);
+//	printf("%s\n", dir);
 
 	window = gtk_application_window_new(app);
 	grid = gtk_grid_new();
@@ -276,48 +335,89 @@ static void activate (GtkApplication* app, gpointer user_data){
 	restart_ebox = gtk_event_box_new();
 	GtkWidget *smile_img = gtk_image_new_from_file(dir);
 
+	GtkWidget *hbox_for_vboxes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	vbox_for_slide = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+	leng_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 10, 50, 1);
+	gtk_range_set_value(GTK_RANGE(leng_slide), new_L);
+	gtk_widget_set_name(leng_slide, "leng_slide");
+	GtkWidget *leng_label = gtk_label_new("Length");
+
+	heig_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 10, 50, 1);
+	gtk_range_set_value(GTK_RANGE(heig_slide), new_H);
+	gtk_widget_set_name(heig_slide, "heig_slide");
+	GtkWidget *heig_label = gtk_label_new("Height");
+
+	bomb_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 10, 1000, 1);
+	gtk_range_set_value(GTK_RANGE(bomb_slide), new_B);
+	gtk_widget_set_name(bomb_slide, "bomb_slide");
+	GtkWidget *bomb_label = gtk_label_new("Number of Mines");
+
+	strcpy(dir, directory);
+	strcat(dir, images);
+	strcat(dir, menu);
+
+	GtkWidget *menu_ebox = gtk_event_box_new();
+	GtkWidget *menu_label = gtk_label_new("Menu");
+
+	GtkWidget *exit_ebox = gtk_event_box_new();
+	GtkWidget *exit_label = gtk_label_new("Exit");
+
+
 	free(dir);
 
+	gtk_box_pack_start(GTK_BOX(vbox_for_slide), leng_label, true, true, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_for_slide), leng_slide, true, true, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_for_slide), heig_label, true, true, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_for_slide), heig_slide, true, true, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_for_slide), bomb_label, true, true, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_for_slide), bomb_slide, true, true, 0);
+
+	GtkCssProvider *cssProvider = gtk_css_provider_new();
+	gtk_css_provider_load_from_path(cssProvider, "theme.css", NULL);
+	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
+                               GTK_STYLE_PROVIDER(cssProvider),
+                               GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
 	gtk_container_add(GTK_CONTAINER(restart_ebox), smile_img);
+	gtk_container_add(GTK_CONTAINER(menu_ebox), menu_label);
+	gtk_container_add(GTK_CONTAINER(exit_ebox), exit_label);
 	g_signal_connect (G_OBJECT(restart_ebox),"button-press-event",
 					G_CALLBACK(restart), NULL);
-	gtk_grid_attach(GTK_GRID(top_grid), timer, 0, 0, 1, 1);
+	g_signal_connect (G_OBJECT(menu_ebox),"button-press-event",
+					G_CALLBACK(set_visiblity), NULL);
+	g_signal_connect (G_OBJECT(exit_ebox),"button-press-event",
+					G_CALLBACK(kill_app), NULL);
+
+	gtk_grid_attach(GTK_GRID(top_grid), exit_ebox, 0, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(top_grid), timer, 1, 0, 1, 1);
 	gtk_grid_attach(GTK_GRID(top_grid), restart_ebox, length/4 , 0, 1, 1);
 	gtk_grid_attach(GTK_GRID(top_grid), counter, length/2, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(top_grid), menu_ebox, length/2 + 1, 0, 1, 1);
 	gtk_widget_set_halign(top_grid, GTK_ALIGN_CENTER);
 	gtk_grid_set_column_homogeneous(GTK_GRID(top_grid), true);
-//	gtk_grid_set_column_spacing(GTK_GRID(top_grid), 10);
-	game_board = board_ctor(game_board, length, height, bomb_num);
-	restart();
-
-	//gtk_window_set_default_size(GTK_WINDOW(window), 500, 550);
-	gtk_window_set_resizable(GTK_WINDOW(window), false);
-	gtk_window_set_title(GTK_WINDOW (window), "Minesweeper");
-	gtk_box_pack_start(GTK_BOX(vbox), top_grid, true, false, 5);
-	gtk_box_pack_start(GTK_BOX(vbox), grid, true, false, 0);
-	gtk_container_add(GTK_CONTAINER(window), vbox);
 
 	gtk_widget_show_all(GTK_WIDGET(window));
 
+	gtk_window_set_resizable(GTK_WINDOW(window), false);
+	gtk_box_pack_start(GTK_BOX(vbox), top_grid, true, false, 5);
+	gtk_box_pack_start(GTK_BOX(vbox), grid, true, false, 0);
+	gtk_box_pack_start(GTK_BOX(hbox_for_vboxes), vbox, true, false, 0);
+	gtk_box_pack_start(GTK_BOX(hbox_for_vboxes), vbox_for_slide, true, true, 20);
+	gtk_container_add(GTK_CONTAINER(window), hbox_for_vboxes);
+
+	game_board = board_ctor(game_board, length, height, bomb_num);
+	restart();
 }
 
 int main(int argc, char **argv){
-
-	//printf("%s\n", directory);
-	height = 20;
-	length = 20;
-	bomb_num = 75;
-	selected_count = 0;
-	unflagged_mines = bomb_num;
-	srand(time(0));
 	GtkApplication *app;
 	int status;
 
 	app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
-	g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
-	status = g_application_run (G_APPLICATION (app), argc, argv);
+	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+	status = g_application_run (G_APPLICATION(app), argc, argv);
+	g_object_unref(app);
 
-	g_object_unref (app);
-	//free_the_board(game_board);
 	return status;
 }

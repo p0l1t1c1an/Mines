@@ -1,7 +1,7 @@
 # Mines
 Minesweeper built in C using GTK+ 3.0 as the gui.
 This was initially a high school project for a CS course so don't judge.
-So far it only works in Unix based systems with GTK and it looks very weird in i3wm.
+So far it only works in Unix based systems with GTK.
 It has been tested in Linux and FreeBSD.
 つ´Д`)つ
 
@@ -22,6 +22,17 @@ So if a 3 is shown, you need 3 flags around the space to middle click.
 Then, everything around it is revealed and if one of them has no bombs then everything around that is revealed as well.
 
 That's how minesweeper works.
+Insert Mafia_meme.jpg
+
+Menu and Exit: 
+On the top right there is text that says "Menu".
+Clicking on it reveals 2 sliders that correspond to the size of the board.
+And another for the number of mines on the board.
+Each slider says their value above them.
+Clicking the face to reset will change the size of the board. 
+(May freeze for a split second rendering more tiles)
+On the top left there is text that says "Exit"
+Clicking that text will close the window for mines, ending the game.
 
 
 Command to compile the code in Linux: 
@@ -42,10 +53,10 @@ Then you can run the game by typing the following into the terminal and/ or dmen
 
 `mines`
 
+
 Known Problems:
 - Need to comment my program
-- Needs a menu to change the size or board and number of bombs
 - Generally, everything that isn't the board looks bad
-- Needs a way to style the graphics. I think it uses CSS and I don't know how to use that for this.
-- Doesn't work in Windows and I don't know how to setup or use gtk in Windows.
+- Needs a way to style the graphics. It uses CSS 
+- Doesn't work in Windows and I don't know how to setup or use gtk in Windows. (Not really a problem)
 - There are probably efficiency errors that are both known and unknown. \\_(ツ)_/

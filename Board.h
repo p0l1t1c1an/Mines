@@ -12,7 +12,7 @@ typedef struct board{
 
 typedef struct board_VTable{
 	void (*p_reveal)	(board *me, int x, int y, GtkWidget *g);
-	void (*p_new_game)	(board *me, int x, int y, GtkWidget *g);
+	void (*p_new_game)	(board *me, int x, int y, int nx, int ny, int nb, GtkWidget *g);
 	void (*p_setup_num)	(board *me, int x, int y); // sets the number for each tile in board
 }board_VTable;
 
