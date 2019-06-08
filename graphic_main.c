@@ -8,6 +8,7 @@ extern char *set_directory(void);
 #define smile "Smile.svg"
 #define shades "Shades.svg"
 #define menu "Menu.svg"
+#define theme "theme.css"
 
 static int height, length, bomb_num;
 static int new_H, new_L, new_B;
@@ -325,7 +326,6 @@ static void activate(GtkApplication* app, gpointer user_data){
 	counter = gtk_label_new(NULL);
 	update_counter(unflagged_mines);
 
-
 	timer = gtk_label_new("0");
 	gtk_widget_set_size_request(timer, 35, 10);
 	timeout_add(100, timer_increase, timer);
@@ -353,16 +353,22 @@ static void activate(GtkApplication* app, gpointer user_data){
 	gtk_widget_set_name(bomb_slide, "bomb_slide");
 	GtkWidget *bomb_label = gtk_label_new("Number of Mines");
 
-	strcpy(dir, directory);
-	strcat(dir, images);
-	strcat(dir, menu);
 
 	GtkWidget *menu_ebox = gtk_event_box_new();
 	GtkWidget *menu_label = gtk_label_new("Menu");
-
 	GtkWidget *exit_ebox = gtk_event_box_new();
 	GtkWidget *exit_label = gtk_label_new("Exit");
 
+	strcpy(dir, directory);
+	strcat(dir, "/");
+	strcat(dir, theme);
+
+	GFile *file = g_file_new_for_path(dir);
+	GtkCssProvider *cssProvider = gtk_css_provider_new();
+	gtk_css_provider_load_from_file(cssProvider, file, NULL);
+	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
+                               GTK_STYLE_PROVIDER(cssProvider),
+                               GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 	free(dir);
 
@@ -372,12 +378,6 @@ static void activate(GtkApplication* app, gpointer user_data){
 	gtk_box_pack_start(GTK_BOX(vbox_for_slide), heig_slide, true, true, 0);
 	gtk_box_pack_start(GTK_BOX(vbox_for_slide), bomb_label, true, true, 0);
 	gtk_box_pack_start(GTK_BOX(vbox_for_slide), bomb_slide, true, true, 0);
-
-	GtkCssProvider *cssProvider = gtk_css_provider_new();
-	gtk_css_provider_load_from_path(cssProvider, "theme.css", NULL);
-	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
-                               GTK_STYLE_PROVIDER(cssProvider),
-                               GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 	gtk_container_add(GTK_CONTAINER(restart_ebox), smile_img);
 	gtk_container_add(GTK_CONTAINER(menu_ebox), menu_label);
