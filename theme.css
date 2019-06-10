@@ -1,7 +1,23 @@
-scale{
+ scale{
 	min-width: 250px;
+	color: white;
+}
+
+scale slider{
+	background-color: white;
+	border-color: white;
+}
+
+scale highlight{
+	background-color: #000080;
 }
 
 label{
-	font: 12px Noto Sans;
+	font: 11px Sans;
+	font-weight: bold;
+	color: #cfcfcf;
+}
+
+window{
+	background-color: black;
 }

@@ -18,6 +18,7 @@ static GtkWidget *window;
 static GtkWidget *counter;
 static GtkWidget *timer;
 static GtkWidget *restart_ebox;
+static GtkWidget *menu_ebox;
 static GtkWidget *vbox_for_slide;
 static GtkWidget *leng_slide;
 static GtkWidget *heig_slide;
@@ -226,7 +227,28 @@ guint timeout_add (guint32 interval, GSourceFunc function, gpointer data){
 	return timeout_add_full (G_PRIORITY_DEFAULT, interval, function, data, NULL);
 }
 
-static void restart(){
+static void set_top_grid(GtkWidget *top_grid){
+
+	timer = g_object_ref(timer);
+	restart_ebox = g_object_ref(restart_ebox);
+	counter = g_object_ref(counter);
+	menu_ebox = g_object_ref(menu_ebox);
+
+	gtk_container_remove(GTK_CONTAINER(top_grid), timer);
+	gtk_container_remove(GTK_CONTAINER(top_grid), restart_ebox);
+	gtk_container_remove(GTK_CONTAINER(top_grid), counter);
+	gtk_container_remove(GTK_CONTAINER(top_grid), menu_ebox);
+
+	gtk_grid_attach(GTK_GRID(top_grid), timer, length /4, 0, 2, 1);
+	gtk_grid_attach(GTK_GRID(top_grid), restart_ebox, length /2 , 0, 2, 1);
+	gtk_grid_attach(GTK_GRID(top_grid), counter, length *3 /4, 0, 2, 1);
+	gtk_grid_attach(GTK_GRID(top_grid), menu_ebox, length -1, 0, 2, 1);
+}
+
+static void restart(GtkWidget *btn, GdkEventButton *event, gpointer user_data){
+	(void) btn;
+	(void) event;
+	GtkWidget *top_grid = user_data;
 	milliseconds = 0;
 	selected_count = 0;
 
@@ -265,6 +287,7 @@ static void restart(){
 	bomb_num = new_B;
 	unflagged_mines = bomb_num;
 	update_counter(unflagged_mines);
+	set_top_grid(top_grid);
 
 	for(int i = 0; i < height; i++){
 	   for(int j = 0; j < length; j++){
@@ -294,11 +317,9 @@ static void set_visiblity(){
 	}
 }
 
-static gboolean kill_app( gpointer user_data){
-	(void) user_data;
+static void kill_app(void){
 	free_the_board(game_board);
 	gtk_window_close(GTK_WINDOW(window));
-	return false;
 }
 
 static void activate(GtkApplication* app, gpointer user_data){
@@ -340,21 +361,17 @@ static void activate(GtkApplication* app, gpointer user_data){
 
 	leng_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 10, 50, 1);
 	gtk_range_set_value(GTK_RANGE(leng_slide), new_L);
-	gtk_widget_set_name(leng_slide, "leng_slide");
 	GtkWidget *leng_label = gtk_label_new("Length");
 
 	heig_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 10, 50, 1);
 	gtk_range_set_value(GTK_RANGE(heig_slide), new_H);
-	gtk_widget_set_name(heig_slide, "heig_slide");
 	GtkWidget *heig_label = gtk_label_new("Height");
 
 	bomb_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 10, 1000, 1);
 	gtk_range_set_value(GTK_RANGE(bomb_slide), new_B);
-	gtk_widget_set_name(bomb_slide, "bomb_slide");
 	GtkWidget *bomb_label = gtk_label_new("Number of Mines");
 
-
-	GtkWidget *menu_ebox = gtk_event_box_new();
+	menu_ebox = gtk_event_box_new();
 	GtkWidget *menu_label = gtk_label_new("Menu");
 	GtkWidget *exit_ebox = gtk_event_box_new();
 	GtkWidget *exit_label = gtk_label_new("Exit");
@@ -383,21 +400,18 @@ static void activate(GtkApplication* app, gpointer user_data){
 	gtk_container_add(GTK_CONTAINER(menu_ebox), menu_label);
 	gtk_container_add(GTK_CONTAINER(exit_ebox), exit_label);
 	g_signal_connect (G_OBJECT(restart_ebox),"button-press-event",
-					G_CALLBACK(restart), NULL);
+					G_CALLBACK(restart), top_grid);
 	g_signal_connect (G_OBJECT(menu_ebox),"button-press-event",
 					G_CALLBACK(set_visiblity), NULL);
 	g_signal_connect (G_OBJECT(exit_ebox),"button-press-event",
 					G_CALLBACK(kill_app), NULL);
 
-	gtk_grid_attach(GTK_GRID(top_grid), exit_ebox, 0, 0, 1, 1);
-	gtk_grid_attach(GTK_GRID(top_grid), timer, 1, 0, 1, 1);
-	gtk_grid_attach(GTK_GRID(top_grid), restart_ebox, length/4 , 0, 1, 1);
-	gtk_grid_attach(GTK_GRID(top_grid), counter, length/2, 0, 1, 1);
-	gtk_grid_attach(GTK_GRID(top_grid), menu_ebox, length/2 + 1, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(top_grid), exit_ebox, 0, 0, 2, 1);
+	//set_top_grid(top_grid);
 	gtk_widget_set_halign(top_grid, GTK_ALIGN_CENTER);
 	gtk_grid_set_column_homogeneous(GTK_GRID(top_grid), true);
 
-	gtk_widget_show_all(GTK_WIDGET(window));
+	gtk_widget_show(GTK_WIDGET(window));
 
 	gtk_window_set_resizable(GTK_WINDOW(window), false);
 	gtk_box_pack_start(GTK_BOX(vbox), top_grid, true, false, 5);
@@ -407,7 +421,8 @@ static void activate(GtkApplication* app, gpointer user_data){
 	gtk_container_add(GTK_CONTAINER(window), hbox_for_vboxes);
 
 	game_board = board_ctor(game_board, length, height, bomb_num);
-	restart();
+	void *worthless;
+	restart(restart_ebox, worthless, top_grid);
 }
 
 int main(int argc, char **argv){
