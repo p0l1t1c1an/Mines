@@ -43,7 +43,10 @@ static void lose(){
 	for(int i = 0; i < height; i++){
 	   for(int j = 0; j < length; j++){
 		  GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(grid),j,i);
-		  g_signal_handlers_block_by_func(ebox ,G_CALLBACK (btn_press_callback), game_board->tiles[i][j]);
+		  g_signal_handlers_block_by_func(ebox ,G_CALLBACK (btn_press_callback),
+											game_board->tiles[i][j]);
+		  g_signal_handlers_block_by_func(ebox ,G_CALLBACK (middle_click),
+				  							game_board->tiles[i][j]);
 	  }
    }
 }
@@ -411,14 +414,14 @@ static void activate(GtkApplication* app, gpointer user_data){
 	gtk_widget_set_halign(top_grid, GTK_ALIGN_CENTER);
 	gtk_grid_set_column_homogeneous(GTK_GRID(top_grid), true);
 
-	gtk_widget_show(GTK_WIDGET(window));
-
 	gtk_window_set_resizable(GTK_WINDOW(window), false);
 	gtk_box_pack_start(GTK_BOX(vbox), top_grid, true, false, 5);
 	gtk_box_pack_start(GTK_BOX(vbox), grid, true, false, 0);
 	gtk_box_pack_start(GTK_BOX(hbox_for_vboxes), vbox, true, false, 0);
 	gtk_box_pack_start(GTK_BOX(hbox_for_vboxes), vbox_for_slide, true, true, 20);
 	gtk_container_add(GTK_CONTAINER(window), hbox_for_vboxes);
+
+	gtk_widget_show(GTK_WIDGET(window));
 
 	game_board = board_ctor(game_board, length, height, bomb_num);
 	void *worthless;
