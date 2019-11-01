@@ -23,38 +23,30 @@ static void reveal(board *me, int x, int y, GtkWidget *grid){
 	me->end = true;
 	for(int i = 0; i < y; i++){
     	for(int j = 0; j < x; j++){
-			if(me->tiles[i][j]->is_bomb && me->tiles[i][j]->is_flag);
+			if(me->tiles[i][j]->is_bomb || me->tiles[i][j]->is_flag){
+				
+				int len = (strlen(directory) + strlen(images) + strlen(bomb) + 1 );
 
-			else if(me->tiles[i][j]->is_bomb || me->tiles[i][j]->is_flag){
-				char *dir = NULL;
-				GtkWidget *image;
-				GList *children, *iter;
 				GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(grid), j, i);
-
-				children = gtk_container_get_children(GTK_CONTAINER(ebox));
-				for(iter = children; iter != NULL; iter = g_list_next(iter))
-			  						gtk_widget_destroy(GTK_WIDGET(iter->data));
-				g_list_free(children);
+				GtkWidget *img  = gtk_bin_get_child(GTK_BIN(ebox));
 
 				if(!me->tiles[i][j]->is_flag && me->tiles[i][j]->is_bomb){
-					char *dir = malloc(strlen(directory) + strlen(images) + strlen(bomb) + 1 ); // Add 1 for null terminator.
+					char dir[len];
 					strcpy(dir, directory);
 					strcat(dir, images);
 					strcat(dir, bomb);
-					//printf("%s\n", "NF, YB" );
-					image = gtk_image_new_from_file(dir);
+
+					gtk_image_set_from_file(GTK_IMAGE(img), dir);
 				}
 
 				else if(me->tiles[i][j]->is_flag && !me->tiles[i][j]->is_bomb){
-					char *dir = malloc(strlen(directory) + strlen(images) + strlen(wrong_flag) + 1 ); // Add 1 for null terminator.
+					char dir[len];
 					strcpy(dir, directory);
 					strcat(dir, images);
 					strcat(dir, wrong_flag);
-					image = gtk_image_new_from_file(dir);
-				}
 
-				gtk_container_add(GTK_CONTAINER(ebox), image);
-				free(dir);
+					gtk_image_set_from_file(GTK_IMAGE(img), dir);
+				}
 			}
 		}
 	}
@@ -103,67 +95,177 @@ static void initialize(board *me, int x, int y, int num_bombs){
 	}
 }
 
-static void reset_grid_pos(int x, int y, GtkWidget *grid){
-		GtkWidget *ebox = gtk_event_box_new();
-		GtkWidget *image;
-		char *dir = malloc(strlen(directory) + strlen(images) + strlen(face) + 1 ); // Add 1 for null terminator.
+static void add_grid_pos(GtkGrid *grid, int x, int y){
+	
+	GtkWidget *ebox = gtk_event_box_new();
+	char *dir = malloc(strlen(directory) + strlen(images) + strlen(face) + 1 ); // Add 1 for null terminator.
 
-		strcpy(dir, directory);
-		strcat(dir, images);
-		strcat(dir, face);
+	strcpy(dir, directory);
+	strcat(dir, images);
+	strcat(dir, face);
 
-		image = gtk_image_new_from_file(dir);
-		gtk_container_add(GTK_CONTAINER(ebox), image);
-		gtk_grid_attach(GTK_GRID(grid), ebox, x, y, 1, 1);
+	GtkWidget *img = gtk_image_new_from_file(dir);
+	gtk_container_add(GTK_CONTAINER(ebox), img);
+	gtk_grid_attach(GTK_GRID(grid), ebox, x, y, 1, 1);
 
-		free(dir);
+	free(dir);
 }
 
-static void reset_tiles(board *me, int x, int y, int new_x, int new_y, int new_bombs){
-	for (int i = 0; i < y; i++) {
-		for (int j = 0; j < x; j++) {
-			free(me->tiles[i][j]->p_Table);
-			free(me->tiles[i][j]);
-		}
-		free(me->tiles[i]);
-	}
-	free(me->tiles);
+static void reset_grid_pos(GtkGrid *grid, int x, int y){
+	
+	GtkWidget *ebox = gtk_grid_get_child_at(grid, x, y);
+	GtkWidget *img  = gtk_bin_get_child(GTK_BIN(ebox));
+	char *dir = malloc(strlen(directory) + strlen(images) + strlen(face) + 1 ); // Add 1 for null terminator.
 
-	me->tiles = (tile ***)malloc(new_y * sizeof(tile **));
-	for (int i = 0; i < new_y; i++){
-		me->tiles[i] = (tile **)malloc(new_x * sizeof(tile *));
-		for (int j = 0; j < new_x; j++){
-			me->tiles[i][j] = (tile *)malloc(sizeof(tile ));
+	strcpy(dir, directory);
+	strcat(dir, images);
+	strcat(dir, face);
+
+	gtk_image_set_from_file(GTK_IMAGE(img), dir);
+
+	free(dir);
+}
+
+static void reset_grid(GtkGrid *grid, int x, int y, int new_x, int new_y){
+
+	int min_y = (y < new_y) ? y : new_y;
+	int min_x = (x < new_x) ? x : new_x;
+
+	if(x > new_x){
+		for (int i = x-1; i >= new_x; i--) {
+			gtk_grid_remove_column(grid, i);
 		}
 	}
-	initialize(me, new_x, new_y, new_bombs);
+	
+	if(y > new_y){
+		for (int i = y-1; i >= new_y; i--) {
+			gtk_grid_remove_row(grid, i);
+		}
+	}
+	
+	if(x < new_x){
+		for (int i = x; i < new_x; i++) {
+			for (int j = 0; j < min_y; j++){
+				add_grid_pos(grid, i, j);
+			}
+		}
+	}
+	
+	if(y < new_y){
+		for (int i = y; i < new_y; i++) {
+			for (int j = 0; j < min_x; j++){
+				add_grid_pos(grid, j, i);
+			}
+		}
+	}
+
+	if(y < new_y && x < new_x ){
+		for (int i = y; i < new_y; i++){
+			for (int j = x; j < new_x; j++){
+				add_grid_pos(grid, j, i);
+			}
+		}
+	}
+
+	for(int i = 0; i < min_y; i++){
+		for(int j = 0; j < min_x; j++){
+			reset_grid_pos(grid, j, i);
+		}
+	}
 }
+
+static void reset_tiles(board *me, int x, int y, int new_x, int new_y){
+
+	int min_y = (y < new_y) ? y : new_y;
+	int min_x = (x < new_x) ? x : new_x;
+
+
+	if(x > new_x){
+		for (int i = 0; i < min_y; i++) {
+			for (int j = x-1; j >= new_x; j--) {
+				free(me->tiles[i][j]->p_Table);
+				free(me->tiles[i][j]);
+			}
+		}
+	 }
+
+	if(y > new_y){
+		for (int i = y-1; i >= new_y; i--) {
+			for (int j = 0; j < min_x; j++) {
+				free(me->tiles[i][j]->p_Table);
+				free(me->tiles[i][j]);
+			}
+			if(x > new_x && y > new_y){
+				for (int j = x-1; j >= new_x; j--) {
+					free(me->tiles[i][j]->p_Table);
+					free(me->tiles[i][j]);
+				}
+			}
+			free(me->tiles[i]);
+		}
+	}
+
+	me->tiles = realloc( me->tiles, new_y * sizeof(tile **));
+	for (int i = 0; i < min_y; i++){
+		me->tiles[i] = realloc(me->tiles[i], new_x * sizeof(tile *));
+	}
+
+	if(x < new_x){
+		for (int i = 0; i < min_y; i++) {
+			for (int j = x; j < new_x; j++) {
+				me->tiles[i][j] = malloc(sizeof( tile ));
+				tile_ctor(me->tiles[i][j], j, i);
+			}
+		}
+	}
+
+	if(y < new_y){
+		for (int i = y; i < new_y; i++) {
+			me->tiles[i] = malloc(new_x * sizeof( tile *));
+			for (int j = 0; j < min_x; j++) {
+				me->tiles[i][j] = malloc(sizeof( tile ));
+				tile_ctor(me->tiles[i][j], j, i);
+			}		
+		}
+	}
+
+	if(x < new_x && y < new_y ){
+		for (int i = y; i < new_y; i++) {
+		//	me->tiles[i] = malloc(new_x * sizeof( tile *));
+			for (int j = x; j < new_x; j++) {
+				me->tiles[i][j] = malloc(sizeof( tile ));
+				tile_ctor(me->tiles[i][j], j, i);
+			}	
+		}
+	}
+}
+
 
 static void new_game(board *me, int x, int y, int new_x, int new_y, int new_bombs, GtkWidget *grid){
-	GList *children, *iter;
 
-	children = gtk_container_get_children(GTK_CONTAINER(grid));
-	for(iter = children; iter != NULL; iter = g_list_next(iter))
-						gtk_widget_destroy(GTK_WIDGET(iter->data));
-	g_list_free(children);
+	reset_grid(GTK_GRID(grid), x, y, new_x, new_y);;
 
-	if(x != new_x || y != new_y || me->bomb_amount != new_bombs){
-		reset_tiles(me, x, y, new_x, new_y, new_bombs);
+	if(x != new_x || y != new_y){
+		
+		reset_tiles(me, x, y, new_x, new_y);
+			
+		if(x > new_x || y > new_y ) initialize(me, new_x, new_y, new_bombs);
+
 		x = new_x;
 		y = new_y;
-		me->bomb_amount = new_bombs;
+	}
+	if(me->bomb_amount != new_bombs){
+		initialize(me, x, y, new_bombs);
 	}
 
 	for(int i = 0; i < y; i++){
     	for(int j = 0; j < x; j++){
 			int ri = i + (random() % (y-i));
 			int rj = j + (random() % (x-j));
-			me->tiles[i][j]->is_flag = false;
-			me->tiles[i][j]->is_selected = false;
+			
 			bool temp = me->tiles[i][j]->is_bomb;
         	me->tiles[i][j]->is_bomb = me->tiles[ri][rj]->is_bomb;
         	me->tiles[ri][rj]->is_bomb = temp;
-			reset_grid_pos(j, i, grid);
 		}
 	}
 	setup_num(me, x, y);

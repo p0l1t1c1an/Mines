@@ -1,5 +1,4 @@
 #include "Board.h"
-//#include <time.h>
 
 extern char *set_directory(void);
 #define directory set_directory()
@@ -269,7 +268,7 @@ static void restart(GtkWidget *btn, GdkEventButton *event, gpointer user_data){
 	//printf("%d, %d, %d\n", new_L, new_H, new_B);
 
 	//printf("String\n");
-	char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile) + 1);
+	char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile));
     strcpy(dir, directory);
 	strcat(dir, images);
     strcat(dir, smile);
@@ -294,7 +293,13 @@ static void restart(GtkWidget *btn, GdkEventButton *event, gpointer user_data){
 
 	for(int i = 0; i < height; i++){
 	   for(int j = 0; j < length; j++){
-		   GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(grid), j, i);
+			GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(grid), j, i);
+
+			g_signal_handlers_disconnect_by_func (G_OBJECT(ebox), 
+										btn_press_callback, game_board->tiles[i][j]);
+			g_signal_handlers_disconnect_by_func (G_OBJECT(ebox), 
+										middle_click, game_board->tiles[i][j]);
+
 			g_signal_connect (G_OBJECT(ebox),"button-press-event",
 							  G_CALLBACK (btn_press_callback), game_board->tiles[i][j]);
 		  	g_signal_connect (G_OBJECT(ebox),"button-press-event",
@@ -326,19 +331,19 @@ static void kill_app(void){
 }
 
 static void activate(GtkApplication* app, gpointer user_data){
-	height = 25;
-	length = 25;
-	bomb_num = 120;
-	new_H = height;
-	new_L = length;
-	new_B = bomb_num;
+	height = 0;
+	length = 0;
+	bomb_num = 0;
+	new_H = 25;
+	new_L = 25;
+	new_B = 120;
 	selected_count = 0;
 	unflagged_mines = bomb_num;
 	srand(time(0));
 
 	(void) user_data;
 
-	char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile) + 1);
+	char *dir = malloc(strlen(directory) + strlen(images) + strlen(smile));
 	strcpy(dir, directory);
 	strcat(dir, images);
 	strcat(dir, smile);
