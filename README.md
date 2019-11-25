@@ -1,10 +1,7 @@
 # Mines
 Minesweeper built in C using GTK+ 3.0 as the gui.
-This was initially a high school project for a CS course so don't judge.
-So far it only works in Unix based systems with GTK.
-It has been tested in Linux and FreeBSD.
-つ´Д`)つ
-
+This was initially a high school project for a CS course.
+So far it only works in Linux based systems with GTK.
 
 How to play the game: 
 Left click a tile to reveal the what is underneath it and Right click to flag the tile. 
@@ -21,9 +18,6 @@ This only works if there are the same amount of flags around it as the number of
 So if a 3 is shown, you need 3 flags around the space to middle click. 
 Then, everything around it is revealed and if one of them has no bombs then everything around that is revealed as well.
 
-That's how minesweeper works.
-Insert Mafia_meme.jpg
-
 Menu and Exit: 
 On the top right there is text that says "Menu".
 Clicking on it reveals 2 sliders that correspond to the size of the board.
@@ -39,24 +33,14 @@ Command to compile the code in Linux:
   
 ``gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c graphic_main.c``
 
-(I believe in FreeBSD remove the 'g' from gcc to be cc)
-
 To run the compiled code:
   
 `./a.out`
   
-To create a symlink of the executable so that the game can be run as Bash command (Only tested in Linux):
+To create a symlink of the executable so that the game can be run as shell command:
   
 `ln -s /path_to_executable/a.out /usr/local/bin/mines`
 
-Then you can run the game by typing the following into the terminal and/ or dmenu:
+Then you can run the game by typing the following into the terminal:
 
 `mines`
-
-
-Known Problems:
-- Need to comment my program
-- Generally, everything that isn't the board looks bad
-- Needs a way to style the graphics. It uses CSS 
-- Doesn't work in Windows and I don't know how to setup or use gtk in Windows. (Not really a problem)
-- There are probably efficiency errors that are both known and unknown. \\_(ツ)_/
