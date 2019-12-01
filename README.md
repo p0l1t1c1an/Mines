@@ -31,7 +31,7 @@ Clicking that text will close the window for mines, ending the game.
 
 Command to compile the code in Linux: 
   
-``gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c graphic_main.c``
+``gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c main.c``
 
 To run the compiled code:
   
