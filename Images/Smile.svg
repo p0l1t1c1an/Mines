@@ -1,126 +1,22 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="35"
-   height="35"
-   viewBox="0 0 9.2604161 9.2604163"
-   version="1.1"
-   id="svg8"
-   inkscape:version="0.92.4 5da689c313, 2019-01-14"
-   sodipodi:docname="Smile.svg">
-  <defs
-     id="defs2">
-    <inkscape:path-effect
-       effect="bspline"
-       id="path-effect959"
-       is_visible="true"
-       weight="33.333333"
-       steps="2"
-       helper_size="0"
-       apply_no_weight="true"
-       apply_with_weight="true"
-       only_selected="false" />
-  </defs>
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="22.627416"
-     inkscape:cx="16.547501"
-     inkscape:cy="17.04512"
-     inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
-     showgrid="false"
-     units="px"
-     inkscape:window-width="1318"
-     inkscape:window-height="713"
-     inkscape:window-x="48"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     showguides="true"
-     inkscape:guide-bbox="true">
-    <sodipodi:guide
-       position="-6.4545594,4.0224066"
-       orientation="1,0"
-       id="guide10"
-       inkscape:locked="false" />
-  </sodipodi:namedview>
-  <metadata
-     id="metadata5">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(0,-287.73961)">
-    <rect
-       id="rect4518"
-       width="9.2610407"
-       height="9.2636576"
-       x="0.00068881456"
-       y="287.74017"
-       style="fill:#e1e1e1;fill-opacity:1;stroke-width:0.10071353" />
-    <path
-       style="fill:#000000;fill-opacity:0.31372549;fill-rule:nonzero;stroke:#ffffff;stroke-width:0.09262349px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0"
-       d="m 8.7986792,288.20348 0.4630507,-0.46318 v 9.26369 H 6.8882347e-4 c 0,0 0.46305210653,-0.46321 0.46305210653,-0.46321 z"
-       id="path4522"
-       inkscape:connector-curvature="0" />
-    <rect
-       style="fill:#bebebe;fill-opacity:1;stroke-width:0.14770848"
-       id="rect4520"
-       width="6.9462538"
-       height="6.949286"
-       x="1.1577603"
-       y="288.89651" />
-    <ellipse
-       style="opacity:1;fill:#ffff00;fill-opacity:1;stroke:#ffff00;stroke-width:0.30103737;stroke-opacity:1"
-       id="path825"
-       cx="4.6381459"
-       cy="292.36188"
-       rx="3.0244813"
-       ry="3.0244815" />
-    <ellipse
-       style="opacity:1;fill:#1a1a1a;fill-opacity:1;stroke:#ffff00;stroke-width:0.27627385;stroke-opacity:1"
-       id="path930"
-       cx="3.4726562"
-       cy="291.21228"
-       rx="0.75483185"
-       ry="0.75483179" />
-    <path
-       style="fill:none;stroke:#1a1a1a;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 3.2711104,293.28632 c 0.4674586,0.23024 0.9347851,0.46042 1.4022913,0.46032 0.4675063,-9e-5 0.9348697,-0.23029 1.401899,-0.46032"
-       id="path957"
-       inkscape:connector-curvature="0"
-       inkscape:path-effect="#path-effect959"
-       inkscape:original-d="m 3.2711104,293.28632 c 0.4675782,0.23 0.9349035,0.46018 1.4020951,0.69059 0.4676793,-0.23041 0.9350407,-0.46061 1.4020952,-0.69059"
-       sodipodi:nodetypes="ccc"
-       transform="matrix(1.0850577,0,0,1.4558646,-0.44048933,-133.76868)" />
-    <ellipse
-       style="opacity:1;fill:#1a1a1a;fill-opacity:1;stroke:#ffff00;stroke-width:0.27627388;stroke-opacity:1"
-       id="path930-7"
-       cx="5.7877607"
-       cy="291.21228"
-       rx="0.75483191"
-       ry="0.75483179" />
-  </g>
+<svg id="svg8" width="35" height="35" version="1.1" viewBox="0 0 9.2604 9.2604" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata id="metadata5">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(0 -287.74)">
+  <rect id="rect4518" x=".00068881" y="287.74" width="9.261" height="9.2637" fill="#e1e1e1" stroke-width=".10071"/>
+  <path id="path4522" d="m8.7987 288.2 0.46305-0.46318v9.2637h-9.261s0.46305-0.46321 0.46305-0.46321z" fill-opacity=".31373" stroke-opacity="0"/>
+  <rect id="rect4520" x="1.1578" y="288.9" width="6.9463" height="6.9493" fill="#bebebe" stroke-width=".14771"/>
+  <ellipse id="path825" cx="4.6381" cy="292.36" rx="3.0245" ry="3.0245" fill="#ff0" stroke="#ff0" stroke-width=".30104"/>
+  <ellipse id="path930" cx="3.4727" cy="291.21" rx=".75483" ry=".75483" fill="#1a1a1a" stroke="#ff0" stroke-width=".27627"/>
+  <path id="path957" transform="matrix(1.0851 0 0 1.4559 -.44049 -133.77)" d="m3.2711 293.29c0.46746 0.23024 0.93479 0.46042 1.4023 0.46032 0.46751-9e-5 0.93487-0.23029 1.4019-0.46032" fill="none" stroke="#1a1a1a" stroke-width=".26458px"/>
+  <ellipse id="path930-7" cx="5.7878" cy="291.21" rx=".75483" ry=".75483" fill="#1a1a1a" stroke="#ff0" stroke-width=".27627"/>
+ </g>
 </svg>
