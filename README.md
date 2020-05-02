@@ -1,5 +1,5 @@
 # Mines
-## Minesweeper clone using SVG images built in C using GTK+ 3.0.
+## Minesweeper clone using SVG images built in C using GTK+ 3.0
 Initially a high school project for a CS course, but rewritten during the `Covid-19` pandemic.
 Also note that I am no artist, so my SVG images might not be the nicest things to look at.
 As of right now, I have only tested this on Arch Linux, but I will be testing it on FreeBSD.
