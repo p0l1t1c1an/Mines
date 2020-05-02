@@ -3,21 +3,26 @@
 
 #include "Tile.h"
 
-typedef struct board{
-	tile ***tiles;
-	int bomb_amount;
-	bool end;
-	struct board_VTable *p_Table;
-}board;
+#include <stdlib.h>
+#include <time.h>
 
-typedef struct board_VTable{
-	void (*p_reveal)	(board *me, int x, int y, GtkWidget *g);
-	void (*p_new_game)	(board *me, int x, int y, int nx, int ny, int nb, GtkWidget *g);
-	void (*p_setup_num)	(board *me, int x, int y); // sets the number for each tile in board
-}board_VTable;
+/* 
+ * Board 
+ * Contains an array of tiles and dtails about
+ * the size, bomb count, and if board can be edited (end) 
+ */
+struct board
+{
+	unsigned char width, height, b_count;
+	struct tile *tiles;
+};
 
-board_VTable *board_table_ctor();
-board *board_ctor(board *me, int x, int y, int num_bombs);
+// resizes the board and resets the tiles and bombs 
+int
+reset(struct board *me, int new_x, int new_y, int new_b);
+ 
+// allocates tiles and constructs the board to a default state
+void
+board_ctor(struct board *me, int x, int y, int num_bombs);
 
-
-#endif//BOARD_H
+#endif //BOARD_H

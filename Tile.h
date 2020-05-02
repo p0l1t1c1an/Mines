@@ -1,26 +1,28 @@
 #ifndef TILE_H
 #define TILE_H
 
-#include <stdbool.h>
-#include <gtk/gtk.h>
+#include <stdio.h>
 
-typedef struct tile{
-	bool is_bomb;
-	bool is_flag;
-	bool is_selected;
-	int num_bombs;
-	int x_pos;
-	int y_pos;
-	struct tile_VTable *p_Table;
-}tile;
+/*
+ * Tile
+ * Contains unsigned chars to store states of the tile.
+ * These being if the tile is a bomb, flagged, selected,
+ * positon, and the number of bombs surronding it.
+ */
 
-typedef struct tile_VTable {
-	void (*p_selected)	(tile *me, GtkWidget *w);
-	void (*p_set_flag)	(tile *me, GtkWidget *w);
-	void (*p_set_bomb)	(tile *me);
-}tile_VTable;
+struct tile
+{
+	unsigned char 
+		is_bomb, is_flag, is_selected,
+		adj_bombs, adj_flags, x, y;
+};
 
-tile_VTable *tile_table_ctor();
-void tile_ctor(tile *me, int x, int y);
+// toggles the state of the is_flag
+void 
+toggle_flag(struct tile *me);
+
+// constructs a tile to a default state
+void
+tile_ctor(struct tile *me, int x, int y, int bomb);
 
 #endif //TILE_H
