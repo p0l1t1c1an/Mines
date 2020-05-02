@@ -4,8 +4,8 @@ Initially a high school project for a CS course, but rewritten during the `Covid
 Also note that I am no artist, so my SVG images might not be the nicest things to look at.
 As of right now, I have only tested this on Arch Linux, but I will be testing it on FreeBSD.
 <br/><br/>
-## How to play:
-### The Basics:
+## How to play
+### The Basics
 For some reason, people don't know how to play this amazing game, so I am leaving a basic set of instuctions.
 Left click a tile to reveal the what is underneath it and Right click to flag the tile. 
 Left clicking a nonbomb tile will reveal a number that represents the number of bombs surronding that space.
@@ -16,7 +16,7 @@ You win by revealing every tile that is not a mine.
 When you win the face at the top puts on shades. 
 (I plan on adding a small pop window to tell you that you won.)
 
-### Secret move:
+### Secret move
 Middle click! Some people, even some that I know play the game, don't know about this move in minesweeper.
 You middle click an already revealed number tile to reveal everything around it that isn't flagged.
 This only works if there are the same amount of flags around it as the number of bombs around it, i.e. the number shown.
@@ -31,7 +31,7 @@ Using that information and some deduction, you can determine which tiles are a m
 (I will add these after uploading images of them)
 <br/><br/>
 ## The Top Bar
-### Menu: 
+### Menu
 On the top right there is text that says `Menu`
 Clicking on it reveals 2 sliders that correspond to the size of the board.
 And another one for the number of mines on the board.
@@ -61,19 +61,31 @@ I rewrote this from my original class project, because I wanted it to run on my 
 As of right now, there is no Makefile to install the project.
 So for the time being follow the following steps.
 
-#### Make a directory to store the Images and theme.css:
+#### Make a directory to store the Images and theme.css
 
 `mkdir /usr/local/share/Mines`
 
-#### Then copy the data into the said directory:
+#### Then copy the data into the said directory
 
 `cp -R /path/to/Mines/Images /path/to/Mines/theme.css /usr/local/share/Mines`
 
-#### If you decide a to use a different path you will need to change this line in `Game.h`:
+#### If you decide a to use a different path you will need to change this line in `Game.h`
 
 `#define dir "/usr/local/share/Mines/"`
 
-#### Then use this command to compile the code: 
+#### Then use this command to compile the code
   
 ``gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c Game.c main.c``
+<br/><br/>
+## Known Issues
+### Valgrind Invalid Read Size of 1
+I have tested my program multiple times with different optimization levels.
+Each time valgrind shows an invalid read size of 1 sourced to `reset` or `setup_num` in `Board.c`.
+Optimization levels fast or s (in gcc) seem to have the most of these, and no optimization normally gives one or two. 
+I'm not sure the cause behind this, and will be looking into it. 
 
+### End Note
+If you find any issues, the cause to one of the known issues above, or have an idea for a new feature, 
+Please let me by submitting an issue or pull request. 
+I would especially welcome a fix to my SVG images, in particular the faces.\
+All are welcome to collaboration.
