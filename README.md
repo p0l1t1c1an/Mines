@@ -27,8 +27,37 @@ Your ultimate goal in the game is to clear all tiles that are do not contain a m
 Each revealed tile will tell you how many mines surrond that block.
 Using that information and some deduction, you can determine which tiles are a mine and those that are not.
 
-### Useful shortcuts
-(I will add these after uploading images of them)
+### Useful Shortcuts
+
+<img align="right" src="https://github.com/p0l1t1c1an/Mines/blob/assets/basic1.png?raw=true">
+
+I have played this game quite a lot, but sadly I haven't prestiged yet. \
+I have figured out some uses shortcut to look for when playing to mark. \
+The image to the right shows a generic area on a game of mines, but if \
+you have never played before you may have no idea what to do.
+
+<img align="right" src="https://github.com/p0l1t1c1an/Mines/blob/assets/corner.png?raw=true">
+
+Now, the image to the left reveals the 2 shortcuts, a simple one on the corner, and another I call a 121.
+I think the corner is one is obvious, the 1 tile is only touching a single unrevealed tile, so it must be a mine.
+As for the 121, this always works if nothing is interfering with the pattern. We know the tiles under the 1's are mines and the tile under the 2 is not, since it is the only possible way to satisfy both the 2 and the two 1's.  
+<br/>
+
+<img align="right" src="https://github.com/p0l1t1c1an/Mines/blob/assets/basic2.png?raw=true">
+<br/><br/>
+
+For the next shortcut, look at the game of Mines to the right.\
+You can see both the corner and a 121 shortcuts. \
+However, there is another one.
+
+<img align="right" src="https://github.com/p0l1t1c1an/Mines/blob/assets/1_2_2_1.png?raw=true">
+
+I call the shortcut shown in the left image a 1221. \
+It works just like the 121 but instead the mines are located underneath the 2s and not the 1s.
+It's the only possible solution without interferences like a wall next to the 1221.
+There are definitely some other shortcuts in Mines, but these are what I find to be the backbound of what I use.
+Many combination can be simplified to these, if you use your deduction!
+
 <br/><br/>
 ## The Top Bar
 ### Menu
@@ -84,8 +113,12 @@ Each time valgrind shows an invalid read size of 1 sourced to `reset` or `setup_
 Optimization levels fast or s (in gcc) seem to have the most of these, and no optimization normally gives one or two. 
 I'm not sure the cause behind this, and will be looking into it. 
 
+### Memory Leaks 
+When using valgrind, it shows that I have tens of thousands of bytes lost by termination, hundreds of thousands are possibly lost, and millions are still reachable.
+My guess is that most of these are something to do with the Gtk and how it frees the memory it has been using for its widgets. 
+
 ### End Note
 If you find any issues, the cause to one of the known issues above, or have an idea for a new feature, 
 Please let me by submitting an issue or pull request. 
-I would especially welcome a fix to my SVG images, in particular the faces.\
+I would especially welcome a fix to my SVG images, in particular the faces, and any memory leaks that I could control.\
 All are welcome to collaboration.
