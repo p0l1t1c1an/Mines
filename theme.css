@@ -1,21 +1,31 @@
- scale{
+scale{
+	font: 10.5px Sans;
+	font-weight: bold;
 	min-width: 250px;
-	color: white;
 }
 
-scale slider{
-	background-color: white;
-	border-color: white;
+scale scale{
+	background-color: transparent;
+	color: #000080;
+	border-color: #000080;
 }
 
 scale highlight{
 	background-color: #000080;
+	color: #000080;
+	border-color: black;
+}
+
+scale trough{
+	background-color: #3f3f3f;
+	color: #3f3f3f;
+	border-color: black;
 }
 
 label{
-	font: 11px Sans;
+	font: 10.5px Sans;
 	font-weight: bold;
-	color: #cfcfcf;
+	color: #dfdfdf;
 }
 
 window{

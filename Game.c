@@ -148,17 +148,17 @@ flag_tile(struct game *me, struct tile *grid_tile)
 
 		toggle_flag(grid_tile);
 
-		if(grid_tile->is_flag)
-		{
-			int i, j,
-				x = grid_tile->x,
-				y = grid_tile->y,
-				height = me->game_board.height,
-				width = me->game_board.width;
+		int i, j,
+			x = grid_tile->x,
+			y = grid_tile->y,
+			height = me->game_board.height,
+			width = me->game_board.width;
 
-			for(i = -1; i < 2; ++i)
+		for(i = -1; i < 2; ++i)
+		{
+			for(j = -1; j < 2; ++j)
 			{
-				for(j = -1; j < 2; ++j)
+				if(x != 0 || y != 0)
 				{
 					if(!((y+i) < 0 || (x+j) < 0) && !((y+i) >= height || (x+j) >= width))
 					{
@@ -167,6 +167,7 @@ flag_tile(struct game *me, struct tile *grid_tile)
 				}
 			}
 		}
+
 	}
 }
 
@@ -263,6 +264,7 @@ middle_click(GtkWidget *btn, GdkEventButton *event, gpointer data)
 
 	if(event->type == GDK_BUTTON_PRESS && event->button == 2 && grid_tile->adj_bombs != 0) //2 should be middle click
 	{	
+		printf("%d\n", grid_tile->adj_flags);
 		if(grid_tile->adj_flags == grid_tile->adj_bombs)
 		{
 			for(int i = -1; i < 2; i++)
@@ -272,7 +274,7 @@ middle_click(GtkWidget *btn, GdkEventButton *event, gpointer data)
 					if(!((y+i) < 0 || (x+j) < 0) && !((y+i) >= height || (x+j) >= width))
 					{
 						if(!(me->game_board.tiles[(y+i) * width + x+j].is_flag ||
-									me->game_board.tiles[(y+i) * width + x+j].is_selected)) 
+							 me->game_board.tiles[(y+i) * width + x+j].is_selected)) 
 						{
 							select_tile(me, &me->game_board.tiles[(y+i) * width + x+j]);
 						}
@@ -573,16 +575,6 @@ activate(GtkApplication* app, gpointer data)
 
 	srandom(time(0));
 
-	char css_file[strlen(dir) + strlen(theme) +1];
-	strcpy(css_file, dir);
-	strcat(css_file, theme);
-
-	GFile *g_file = g_file_new_for_path(css_file);
-	GtkCssProvider *cssProvider = gtk_css_provider_new();
-	gtk_css_provider_load_from_file(cssProvider, g_file, NULL);
-	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
-			GTK_STYLE_PROVIDER(cssProvider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
 	char face_file[strlen(dir) + strlen(images) + strlen(face) + 1];
 	strcpy(face_file, dir);
 	strcat(face_file, images);
@@ -625,7 +617,7 @@ activate(GtkApplication* app, gpointer data)
 	gtk_range_set_value(GTK_RANGE(me->height_slide), me->game_board.height);
 	GtkWidget *height_label = gtk_label_new("Height");
 
-	me->bomb_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 10, 1000, 1);
+	me->bomb_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 10, 999, 1);
 	gtk_range_set_value(GTK_RANGE(me->bomb_slide), me->game_board.b_count);
 	GtkWidget *bomb_label = gtk_label_new("Number of Mines");
 
@@ -659,6 +651,17 @@ activate(GtkApplication* app, gpointer data)
 			G_CALLBACK(toggle_visiblity), me->slide_vbox);
 	g_signal_connect (G_OBJECT(exit_ebox),"button-press-event",
 			G_CALLBACK(kill_click), me);
+
+
+	char css_file[strlen(dir) + strlen(theme) +1];
+	strcpy(css_file, dir);
+	strcat(css_file, theme);
+
+	GFile *g_file = g_file_new_for_path(css_file);
+	GtkCssProvider *cssProvider = gtk_css_provider_new();
+	gtk_css_provider_load_from_file(cssProvider, g_file, NULL);
+	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
+			GTK_STYLE_PROVIDER(cssProvider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 	gtk_window_set_resizable(GTK_WINDOW(me->window), 0);
 	gtk_box_pack_start(GTK_BOX(vbox), me->top_grid, 1, 0, 5);
