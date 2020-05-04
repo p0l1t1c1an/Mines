@@ -146,6 +146,8 @@ flag_tile(struct game *me, struct tile *grid_tile)
 			addition = -1;
 		}
 
+		toggle_flag(grid_tile);
+
 		if(grid_tile->is_flag)
 		{
 			int i, j,
@@ -160,12 +162,10 @@ flag_tile(struct game *me, struct tile *grid_tile)
 				{
 					if(!((y+i) < 0 || (x+j) < 0) && !((y+i) >= height || (x+j) >= width))
 					{
-						me->game_board.tiles[(y+i) * width + x + j].adj_flags += addition;
+						me->game_board.tiles[(y+i) * width + x + j].adj_flags -= addition;
 					}
 				}
 			}
-
-			toggle_flag(grid_tile);
 		}
 	}
 }
@@ -173,46 +173,50 @@ flag_tile(struct game *me, struct tile *grid_tile)
 static void
 select_tile(struct game *me, struct tile *grid_tile)
 {
-	int x = grid_tile->x,
-		y = grid_tile->y;
-
-	me->selected_count++;
-	if(!grid_tile->is_flag)
+	if(!grid_tile->is_selected)
 	{
-		if(grid_tile->is_bomb)
+		int x = grid_tile->x,
+			y = grid_tile->y;
+
+		if(!grid_tile->is_flag)
 		{
-			lose(me);
-			return;
-		}
-
-		GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(me->grid), x, y);
-		g_signal_handlers_unblock_by_func(ebox, G_CALLBACK (middle_click), me);
-		g_signal_handlers_block_by_func(ebox, G_CALLBACK (left_right_click), me);
-
-		GtkWidget *img  = gtk_bin_get_child(GTK_BIN(ebox));	
-		int num_len = strlen(num_faces[grid_tile->adj_bombs]);
-
-		char file[strlen(dir) + strlen(images) + num_len + 1];
-		strcpy(file, dir);
-		strcat(file, images);
-		strcat(file, num_faces[grid_tile->adj_bombs]);
-
-		gtk_image_set_from_file(GTK_IMAGE(img), file);
-
-		grid_tile->is_selected = 1;
-
-		if(grid_tile->adj_bombs == 0)
-		{
-			for(int i = -1; i < 2; i++)
+			if(grid_tile->is_bomb)
 			{
-				for(int j = -1; j < 2; j++)
+				lose(me);
+				return;
+			}
+
+			me->selected_count++;
+
+			GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(me->grid), x, y);
+			g_signal_handlers_unblock_by_func(ebox, G_CALLBACK (middle_click), me);
+			g_signal_handlers_block_by_func(ebox, G_CALLBACK (left_right_click), me);
+
+			GtkWidget *img  = gtk_bin_get_child(GTK_BIN(ebox));	
+			int num_len = strlen(num_faces[grid_tile->adj_bombs]);
+
+			char file[strlen(dir) + strlen(images) + num_len + 1];
+			strcpy(file, dir);
+			strcat(file, images);
+			strcat(file, num_faces[grid_tile->adj_bombs]);
+
+			gtk_image_set_from_file(GTK_IMAGE(img), file);
+
+			grid_tile->is_selected = 1;
+
+			if(grid_tile->adj_bombs == 0)
+			{
+				for(int i = -1; i < 2; i++)
 				{
-					if(!((y+i) < 0 || (x+j) < 0) && !((y+i) >= me->game_board.height || (x+j) >= me->game_board.width))
+					for(int j = -1; j < 2; j++)
 					{
-						struct tile *next_tile = &me->game_board.tiles[(y+i) * me->game_board.width + x+j];
-						if(!next_tile->is_selected)
+						if(!((y+i) < 0 || (x+j) < 0) && !((y+i) >= me->game_board.height || (x+j) >= me->game_board.width))
 						{
-							select_tile(me, next_tile);
+							struct tile *next_tile = &me->game_board.tiles[(y+i) * me->game_board.width + x+j];
+							if(!next_tile->is_selected)
+							{
+								select_tile(me, next_tile);
+							}
 						}
 					}
 				}
@@ -547,7 +551,7 @@ kill_app(struct game *me)
 	gtk_widget_destroy(me->top_grid);
 	gtk_widget_destroy(me->grid);
 	gtk_widget_destroy(me->slide_vbox);
-	//gtk_widget_destroy(gtk_bin_get_child(GTK_BIN(me->window)));
+	gtk_widget_destroy(gtk_bin_get_child(GTK_BIN(me->window)));
 
 	// Close the window
 	gtk_window_close(GTK_WINDOW(me->window));
@@ -593,15 +597,7 @@ activate(GtkApplication* app, gpointer data)
 	{
 		for(j = 0; j < me->game_board.width; ++j)
 		{
-			GtkWidget *ebox = gtk_event_box_new();
-			GtkWidget *img = gtk_image_new_from_file(face_file);
-
-			gtk_container_add(GTK_CONTAINER(ebox), img);
-
-			g_signal_connect(G_OBJECT(ebox), "button-press-event", G_CALLBACK(left_right_click), me);
-			g_signal_connect(G_OBJECT(ebox), "button-press-event", G_CALLBACK(middle_click), me);
-
-			gtk_grid_attach(GTK_GRID(me->grid), ebox, j, i, 1, 1);
+			add_grid_pos(me, face_file, j, i);
 		}
 	}
 
