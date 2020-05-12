@@ -3,26 +3,33 @@
 static void 
 setup_num(struct board *me)
 {
-	int i, j, k, l; 
-	int w = me->width, h = me->height;
-	for(i = 0; i < h; i++)
+	int x, y, j, i, 
+		w = me->width, 
+		h = me->height,
+		count = 0;
+
+	struct tile *grid_tile = &me->tiles[0]; 
+
+	while(count < me->width * me->height)
 	{
-		for(j = 0; j < w; j++)
+		if(grid_tile->is_bomb)
 		{
-			if(me->tiles[i * w + j].is_bomb)
+			for(i = -1; i <= 1; ++i)
 			{
-				for(k = i-1; k <= i+1; k++)
+				for(j = -1; j <= 1; ++j)
 				{
-					for(l = j-1; l <= j+1; l++)
+					int x = grid_tile->x,
+						y = grid_tile->y;
+
+					if(!me->tiles[(y+i) * w + x+j].is_bomb && y+i < me->height && y+i >= 0 && x+j < me->width && x+j >= 0)
 					{
-						if(!me->tiles[k * w + l].is_bomb && k < h && k >= 0 && l < w && l >= 0)
-						{
-							me->tiles[k * w + l].adj_bombs += 1;
-						}
+						me->tiles[(y+i) * w + x+j].adj_bombs += 1;
 					}
 				}
 			}
 		}
+		++grid_tile;	
+		++count;
 	}
 }
 
@@ -30,14 +37,14 @@ setup_num(struct board *me)
 static void 
 initialize(struct board *me)
 {
-	int i, j, count = 0;
-	for(i = 0; i < me->height; ++i)
+	int count = 0;
+	struct tile *grid_tile = &me->tiles[0]; 
+
+	while(count < me->width * me->height)
 	{
-		for (j = 0; j < me->width; ++j)
-		{
-			tile_ctor(&me->tiles[i* me->width + j], j, i, count < me->b_count);
-			++count;	
-		}
+		tile_ctor(grid_tile, count % me->width, count / me->width, count < me->b_count);
+		++grid_tile;	
+		++count;	
 	}
 }
 
@@ -46,7 +53,7 @@ static int
 reset_tiles(struct board *me, int new_x, int new_y)
 {
 	struct tile *temp = NULL;
-	
+
 	if(new_y != me->height || new_x != me->width)
 	{
 		temp = realloc(me->tiles, new_y * new_x * sizeof(struct tile));
@@ -83,18 +90,20 @@ reset(struct board *me, int new_x, int new_y, int new_bombs)
 
 	initialize(me);
 
-	int i, j;
-	for(i = 0; i < me->height; i++)
-	{
-		for(j = 0; j < me->width; j++)
-		{
-			int ri = i + (random() % (me->height - i));
-			int rj = j + (random() % (me->width - j));
+	int count = 0;
+	struct tile *grid_tile = &me->tiles[0]; 
 
-			int temp = me->tiles[i * me->width + j].is_bomb;
-			me->tiles[i * me->width + j].is_bomb = me->tiles[ri * me->width + rj].is_bomb;
-			me->tiles[ri * me->width + rj].is_bomb = temp;
-		}
+	while(count < me->width * me->height)
+	{
+		int ri = grid_tile->y + (random() % (me->height - grid_tile->y));
+		int rj = grid_tile->x + (random() % (me->width - grid_tile->x));
+
+		int temp = grid_tile->is_bomb;
+		grid_tile->is_bomb = me->tiles[ri * me->width + rj].is_bomb;
+		me->tiles[ri * me->width + rj].is_bomb = temp;
+
+		++grid_tile;	
+		++count;
 	}
 	setup_num(me);
 	return 1;

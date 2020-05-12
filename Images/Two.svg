@@ -16,11 +16,13 @@
    </cc:Work>
   </rdf:RDF>
  </metadata>
- <g id="layer1" transform="translate(0 -291.71)">
-  <path id="path4522" d="m5.0309 291.97 0.26476-0.26477v5.2952h-5.2952s0.26476-0.26476 0.26476-0.26476z" fill="#bebebf" stroke-opacity="0"/>
+ <g id="layer1" transform="translate(0,-291.71)">
+  <path id="path4522" d="m5.0309 291.97 0.26476-0.26477v5.2952h-5.2952l0.26476-0.26476z" fill="#bebebf" stroke-opacity="0"/>
   <rect id="rect4520" x=".26518" y="291.97" width="4.7657" height="4.7657" fill="#bebebe" stroke-width=".10132"/>
   <rect id="rect4518" x="-.0010914" y="291.71" width="5.2917" height="5.2917" fill="#bebebe" stroke-width=".057539"/>
-  <text id="text4867" transform="scale(.91572 1.092)" x="1.4339579" y="271.00876" fill="#00bd35" font-family="sans-serif" font-size="4.3382px" letter-spacing="0px" stroke-width=".10846" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan id="tspan4865" x="1.4339579" y="271.00876" fill="#00bd35" stroke-width=".10846">2</tspan></text>
+  <g id="text4867" transform="scale(.91572 1.092)" fill="#00bd35" stroke-width=".10846" aria-label="2">
+   <path id="path4376" d="m2.2664 270.65h1.4934v0.36011h-2.0081v-0.36011q0.2436-0.25207 0.66302-0.67572 0.42153-0.42577 0.52957-0.54863 0.20547-0.23089 0.28597-0.38976 0.082612-0.16099 0.082612-0.31562 0-0.25208-0.17793-0.41095-0.17582-0.15886-0.45966-0.15886-0.20123 0-0.42577 0.0699-0.22242 0.0699-0.47661 0.21182v-0.43212q0.25843-0.1038 0.48296-0.15675 0.22454-0.053 0.41094-0.053 0.49144 0 0.78376 0.24572 0.29232 0.24572 0.29232 0.65666 0 0.19488-0.074139 0.3707-0.072021 0.17369-0.26478 0.41094-0.052957 0.0614-0.3368 0.35587-0.28385 0.29232-0.8007 0.81976z" fill="#00bd35" stroke-width=".10846"/>
+  </g>
   <path id="path23" d="m0.098797 291.71 8.4276e-4 5.2916z" fill="#4ee1e1" stroke="#828282" stroke-width=".19759px"/>
   <path id="path23-3" d="m5.1933 291.71 8.428e-4 5.2916z" fill="#4ee1e1" stroke="#828282" stroke-width=".19759px"/>
   <path id="path23-3-6" d="m1.5871e-5 291.81c5.2916 8.5e-4 5.2916 8.5e-4 5.2916 8.5e-4z" fill="#4ee1e1" stroke="#828282" stroke-width=".19761px"/>

@@ -16,11 +16,13 @@
    </cc:Work>
   </rdf:RDF>
  </metadata>
- <g id="layer1" transform="translate(0 -291.71)">
-  <path id="path4522" d="m5.0309 291.97 0.26476-0.26477v5.2952h-5.2952s0.26476-0.26476 0.26476-0.26476z" fill="#bebebf" stroke-opacity="0"/>
+ <g id="layer1" transform="translate(0,-291.71)">
+  <path id="path4522" d="m5.0309 291.97 0.26476-0.26477v5.2952h-5.2952l0.26476-0.26476z" fill="#bebebf" stroke-opacity="0"/>
   <rect id="rect4520" x=".26518" y="291.97" width="4.7657" height="4.7657" fill="#bebebe" stroke-width=".10132"/>
   <rect id="rect4518" x="-.0010914" y="291.71" width="5.2917" height="5.2917" fill="#bebebe" stroke-width=".057539"/>
-  <text id="text4867" transform="scale(.91572 1.092)" x="1.4339579" y="271.00876" fill="#700028" font-family="sans-serif" font-size="4.3382px" letter-spacing="0px" stroke-width=".10846" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan id="tspan4865" x="1.4339579" y="271.00876" fill="#700028" stroke-width=".10846">5</tspan></text>
+  <g id="text4867" transform="scale(.91572 1.092)" fill="#700028" stroke-width=".10846" aria-label="5">
+   <path id="path3861" d="m1.9021 267.85h1.6798v0.36011h-1.2879v0.77528q0.093203-0.0318 0.18641-0.0466 0.093204-0.017 0.18641-0.017 0.52957 0 0.83883 0.29021 0.30927 0.2902 0.30927 0.78587 0 0.5105-0.31774 0.79435-0.31774 0.28173-0.89602 0.28173-0.19912 0-0.40671-0.0339-0.20547-0.0339-0.42577-0.10168v-0.43001q0.19064 0.1038 0.394 0.15464 0.20335 0.0508 0.43001 0.0508 0.36646 0 0.5804-0.19276 0.21394-0.19276 0.21394-0.52321t-0.21394-0.52321q-0.21394-0.19276-0.5804-0.19276-0.17158 0-0.34316 0.0381-0.16946 0.0381-0.34739 0.11862z" fill="#700028" stroke-width=".10846"/>
+  </g>
   <path id="path23" d="m0.098797 291.71 8.4276e-4 5.2916z" fill="#4ee1e1" stroke="#828282" stroke-width=".19759px"/>
   <path id="path23-3" d="m5.1933 291.71 8.428e-4 5.2916z" fill="#4ee1e1" stroke="#828282" stroke-width=".19759px"/>
   <path id="path23-3-6" d="m1.5871e-5 291.81c5.2916 8.5e-4 5.2916 8.5e-4 5.2916 8.5e-4z" fill="#4ee1e1" stroke="#828282" stroke-width=".19761px"/>

@@ -1,6 +1,7 @@
 #include "Game.h"
 
 #include <string.h>
+#include <math.h>
 
 static void 
 left_right_click(GtkWidget *btn, GdkEventButton *event, gpointer data);
@@ -23,50 +24,50 @@ g_signal_is_blocked_by_func(gpointer widget, GFunc function, gpointer data)
 static void 
 reveal(struct game *me)
 {
-	struct board *gb = &me->game_board;
+	int tiles_remain = me->game_board.height * me->game_board.width;
+	struct tile *grid_tile = &me->game_board.tiles[0]; 
 
-	for(int i = 0; i < gb->height; i++)
+	while(tiles_remain > 0)
 	{
-		for(int j = 0; j < gb->width; j++)
+		GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(me->grid), grid_tile->x, grid_tile->y);
+
+		if(!g_signal_is_blocked_by_func(ebox, (GFunc) left_right_click, me))
+			g_signal_handlers_block_by_func(ebox, G_CALLBACK (left_right_click), me);
+
+		if(!g_signal_is_blocked_by_func(ebox, (GFunc) middle_click, me))
+			g_signal_handlers_block_by_func(ebox, G_CALLBACK (middle_click), me);
+
+		if(grid_tile->is_bomb || grid_tile->is_flag)
 		{
+			int len = strlen(dir) + strlen(images) + 1;
 
-			GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(me->grid), j, i);
+			GtkWidget *img  = gtk_bin_get_child(GTK_BIN(ebox));
 
-			if(!g_signal_is_blocked_by_func(ebox, (GFunc) left_right_click, me))
-				g_signal_handlers_block_by_func(ebox, G_CALLBACK (left_right_click), me);
-		
-			if(!g_signal_is_blocked_by_func(ebox, (GFunc) middle_click, me))
-				g_signal_handlers_block_by_func(ebox, G_CALLBACK (middle_click), me);
-
-			if(gb->tiles[i * gb->width + j].is_bomb || gb->tiles[i*gb->width + j].is_flag)
+			if(!grid_tile->is_flag && grid_tile->is_bomb)
 			{
-				int len = strlen(dir) + strlen(images) + 1;
+				len += strlen(bomb);
+				char file[len];
+				strcpy(file, dir);
+				strcat(file, images);
+				strcat(file, bomb);
 
-				GtkWidget *img  = gtk_bin_get_child(GTK_BIN(ebox));
+				gtk_image_set_from_file(GTK_IMAGE(img), file);
+			}
 
-				if(!gb->tiles[i*gb->width + j].is_flag && gb->tiles[i*gb->width + j].is_bomb)
-				{
-					len += strlen(bomb);
-					char file[len];
-					strcpy(file, dir);
-					strcat(file, images);
-					strcat(file, bomb);
+			else if(grid_tile->is_flag && !grid_tile->is_bomb)
+			{
+				len += strlen(wrong);
+				char file[len];
+				strcpy(file, dir);
+				strcat(file, images);
+				strcat(file, wrong);
 
-					gtk_image_set_from_file(GTK_IMAGE(img), file);
-				}
-
-				else if(gb->tiles[i*gb->width + j].is_flag && !gb->tiles[i*gb->width + j].is_bomb)
-				{
-					len += strlen(wrong);
-					char file[len];
-					strcpy(file, dir);
-					strcat(file, images);
-					strcat(file, wrong);
-
-					gtk_image_set_from_file(GTK_IMAGE(img), file);
-				}
+				gtk_image_set_from_file(GTK_IMAGE(img), file);
 			}
 		}
+
+		--tiles_remain;
+		++grid_tile;
 	}
 }
 
@@ -167,7 +168,6 @@ flag_tile(struct game *me, struct tile *grid_tile)
 				}
 			}
 		}
-
 	}
 }
 
@@ -230,8 +230,8 @@ select_tile(struct game *me, struct tile *grid_tile)
 static void 
 update_counter(struct game *me)
 {
-	char count[3];	// should never excede 3 digits
-	sprintf(count, "%d", me->unflagged_mines);
+	char count[4];	// should never excede 3 digits
+	sprintf(count, "%u", me->unflagged_mines);
 	gtk_label_set_text(GTK_LABEL(me->counter), count);
 	gtk_widget_show(me->counter);
 }
@@ -264,7 +264,7 @@ middle_click(GtkWidget *btn, GdkEventButton *event, gpointer data)
 
 	if(event->type == GDK_BUTTON_PRESS && event->button == 2 && grid_tile->adj_bombs != 0) //2 should be middle click
 	{	
-		printf("%d\n", grid_tile->adj_flags);
+		//printf("%d\n", grid_tile->adj_flags);
 		if(grid_tile->adj_flags == grid_tile->adj_bombs)
 		{
 			for(int i = -1; i < 2; i++)
@@ -274,7 +274,7 @@ middle_click(GtkWidget *btn, GdkEventButton *event, gpointer data)
 					if(!((y+i) < 0 || (x+j) < 0) && !((y+i) >= height || (x+j) >= width))
 					{
 						if(!(me->game_board.tiles[(y+i) * width + x+j].is_flag ||
-							 me->game_board.tiles[(y+i) * width + x+j].is_selected)) 
+									me->game_board.tiles[(y+i) * width + x+j].is_selected)) 
 						{
 							select_tile(me, &me->game_board.tiles[(y+i) * width + x+j]);
 						}
@@ -284,6 +284,10 @@ middle_click(GtkWidget *btn, GdkEventButton *event, gpointer data)
 			g_signal_handlers_block_by_func(btn, G_CALLBACK (middle_click), me);
 			gtk_widget_show_all(me->grid);
 		}
+	}
+	if(me->selected_count >= (me->game_board.height * me->game_board.width - me->game_board.b_count))
+	{
+		win(me);
 	}
 }
 
@@ -319,6 +323,11 @@ left_right_click(GtkWidget *btn, GdkEventButton *event, gpointer data)
 		}
 	}
 	gtk_widget_show(me->grid);
+	//printf("%d >= %d\n", me->selected_count, (me->game_board.height * me->game_board.width - me->game_board.b_count));
+	if(me->selected_count >= (me->game_board.height * me->game_board.width - me->game_board.b_count))
+	{
+		win(me);
+	}
 }
 
 
@@ -375,82 +384,71 @@ reset_grid(struct game *me, int row, int col)
 	strcat(file, images);
 	strcat(file, face);
 
-	int width = me->game_board.width,
+	unsigned char 
+		width = me->game_board.width,
 		height = me->game_board.height,
 		min_w = (width < width + col) ? width : width + col,
-		min_h = (height < height + row) ? height : height + row;
+		min_h = (height < height + row) ? height : height + row,
+		max_w = (width == min_w) ? width + col : width,
+		max_h = (height == min_h) ? height + row : height;
 
-	int i, j;	
-	if(row > 0)
+	int i, j;
+	for(i = 0; i < max_h; ++i)
 	{
-		for(i = height; i < height + row; ++i)
-		{
-			for(j = 0; j < width; ++j)
-			{		
-				add_grid_pos(me, file, j, i);
+		for(j = 0; j < max_w; ++j)
+		{	
+			if(i < min_h && j < min_w)
+			{
+				reset_grid_pos(me, file, j, i);
 			}
-		}
-	}
-
-	else if(row < 0)
-	{
-		for(i = height -1; i >= height + row; --i)
-		{
-			for(j = 0; j < width; ++j)
-			{		
-				remove_grid_pos(me, j, i);
+			else if(i >= min_h && j < min_w)
+			{
+				if(min_h == height)
+				{
+					add_grid_pos(me, file, j, i);
+				}
+				else
+				{
+					remove_grid_pos(me, j, i);
+				}
 			}
-			gtk_grid_remove_row(GTK_GRID(me->grid), i);
-		}
-	}
-
-	if(col > 0)
-	{
-		for(j = width; j < width + col; ++j)
-		{
-			for(i = 0; i < height + row; ++i)
-			{	
-				add_grid_pos(me, file, j, i);
+			else if(i < min_h && j >= min_w)
+			{
+				if(min_w == width)
+				{
+					add_grid_pos(me, file, j, i);
+				}
+				else
+				{
+					remove_grid_pos(me, j, i);
+				}
 			}
-		}
-	}
-
-	else if(col < 0)
-	{
-		for(j = width -1; j >= width + col; --j)
-		{
-			for(i = 0; i < height + row; ++i)
-			{	
-				remove_grid_pos(me, j, i);
+			else if(i >= min_h && j >= min_w)
+			{
+				if(min_h == height && min_w == width)
+				{
+					add_grid_pos(me, file, j, i);
+				}
+				else if(max_h == height && max_w == width)
+				{
+					remove_grid_pos(me, j, i);
+				}
 			}
-			gtk_grid_remove_column(GTK_GRID(me->grid), j);
-		}
-	}
-
-	for(i = 0; i < min_h; ++i)
-	{
-		for(j = 0; j < min_w; ++j)
-		{
-			reset_grid_pos(me, file, j, i);
 		}
 	}
 }
 
 
-static gint 
+static gint
 timer_increase(gpointer data)
-{	
+{
 	struct game *me = data;
-	char count[4];
-
-	me->milliseconds += 100;
+	me->milliseconds += 500;
+	int n = floor(log10(me->milliseconds));
+	char count[n];
 	sprintf(count, "%d", me->milliseconds/1000);
 	gtk_label_set_text(GTK_LABEL(me->timer), count);
 	gtk_widget_show(me->timer);
-	if(me->selected_count >= (me->game_board.height * me->game_board.width - me->game_board.b_count))
-	{
-		win(me);
-	}
 	return 1;
 }
 
@@ -464,7 +462,7 @@ restart(struct game *me)
 	{
 		g_source_remove(me->source);
 	}
-	me->source = g_timeout_add(100, timer_increase, me);
+	me->source = g_timeout_add(500, timer_increase, me);
 	me->is_paused = 0;
 
 	int new_w = gtk_range_get_value(GTK_RANGE(me->width_slide));

@@ -16,11 +16,13 @@
    </cc:Work>
   </rdf:RDF>
  </metadata>
- <g id="layer1" transform="translate(0 -291.71)">
-  <path id="path4522" d="m5.0309 291.97 0.26476-0.26477v5.2952h-5.2952s0.26476-0.26476 0.26476-0.26476z" fill="#bebebf" stroke-opacity="0"/>
+ <g id="layer1" transform="translate(0,-291.71)">
+  <path id="path4522" d="m5.0309 291.97 0.26476-0.26477v5.2952h-5.2952l0.26476-0.26476z" fill="#bebebf" stroke-opacity="0"/>
   <rect id="rect4520" x=".26518" y="291.97" width="4.7657" height="4.7657" fill="#bebebe" stroke-width=".10132"/>
   <rect id="rect4518" x="-.0010914" y="291.71" width="5.2917" height="5.2917" fill="#bebebe" stroke-width=".057539"/>
-  <text id="text4867" transform="scale(.91572 1.092)" x="1.4339579" y="271.00876" fill="#1a1a1a" font-family="sans-serif" font-size="4.3382px" letter-spacing="0px" stroke-width=".10846" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan id="tspan4865" x="1.4339579" y="271.00876" fill="#1a1a1a" stroke-width=".10846">7</tspan></text>
+  <g id="text4867" transform="scale(.91572 1.092)" fill="#1a1a1a" stroke-width=".10846" aria-label="7">
+   <path id="path4127" d="m1.7898 267.85h2.0335v0.18217l-1.1481 2.9804h-0.44695l1.0803-2.8025h-1.5188z" fill="#1a1a1a" stroke-width=".10846"/>
+  </g>
   <path id="path23" d="m0.098797 291.71 8.4276e-4 5.2916z" fill="#4ee1e1" stroke="#828282" stroke-width=".19759px"/>
   <path id="path23-3" d="m5.1933 291.71 8.428e-4 5.2916z" fill="#4ee1e1" stroke="#828282" stroke-width=".19759px"/>
   <path id="path23-3-6" d="m1.5871e-5 291.81c5.2916 8.5e-4 5.2916 8.5e-4 5.2916 8.5e-4z" fill="#4ee1e1" stroke="#828282" stroke-width=".19761px"/>
