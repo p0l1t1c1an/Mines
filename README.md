@@ -104,7 +104,7 @@ So for the time being follow the following steps.
 
 #### Then use this command to compile the code
   
-``gcc `pkg-config --cflags --libs gtk+-3.0` Tile.c Board.c Game.c main.c``
+``gcc `pkg-config --cflags --libs gtk+-3.0` -lm Tile.c Board.c Game.c main.c``
 <br/><br/>
 ## Known Issues
 ### Valgrind Invalid Read Size of 1
