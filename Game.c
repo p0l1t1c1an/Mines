@@ -12,7 +12,6 @@ middle_click(GtkWidget *btn, GdkEventButton *event, gpointer data);
 static void 
 kill_app(struct game *me);
 
-
 static int
 g_signal_is_blocked_by_func(gpointer widget, GFunc function, gpointer data)
 {
@@ -39,30 +38,19 @@ reveal(struct game *me)
 
 		if(grid_tile->is_bomb || grid_tile->is_flag)
 		{
-			int len = strlen(dir) + strlen(images) + 1;
-
 			GtkWidget *img  = gtk_bin_get_child(GTK_BIN(ebox));
 
 			if(!grid_tile->is_flag && grid_tile->is_bomb)
 			{
-				len += strlen(bomb);
-				char file[len];
-				strcpy(file, dir);
-				strcat(file, images);
-				strcat(file, bomb);
-
-				gtk_image_set_from_file(GTK_IMAGE(img), file);
+				gtk_image_clear(GTK_IMAGE(img));
+				GdkPixbuf *gpix = gdk_pixbuf_copy(me->bomb_tile);
+				gtk_image_set_from_pixbuf(GTK_IMAGE(img), gpix);
 			}
-
 			else if(grid_tile->is_flag && !grid_tile->is_bomb)
 			{
-				len += strlen(wrong);
-				char file[len];
-				strcpy(file, dir);
-				strcat(file, images);
-				strcat(file, wrong);
-
-				gtk_image_set_from_file(GTK_IMAGE(img), file);
+				gtk_image_clear(GTK_IMAGE(img));
+				GdkPixbuf *gpix = gdk_pixbuf_copy(me->wrong_tile);
+				gtk_image_set_from_pixbuf(GTK_IMAGE(img), gpix);
 			}
 		}
 
@@ -100,14 +88,12 @@ win(struct game *me)
 		}
 	}
 
-	char file[strlen(dir) + strlen(images) + strlen(shades) + 1];
-	strcpy(file, dir);
-	strcat(file, images);
-	strcat(file, shades);
 
 	GtkWidget *img = gtk_bin_get_child(GTK_BIN(me->restart_ebox));
 	gtk_image_clear(GTK_IMAGE(img));
-	gtk_image_set_from_file(GTK_IMAGE(img), file);
+	
+	GdkPixbuf *gpix = gdk_pixbuf_copy(me->shade_tile);
+	gtk_image_set_from_pixbuf(GTK_IMAGE(img), gpix);
 	gtk_widget_show(me->restart_ebox);
 
 	// TODO 
@@ -123,26 +109,20 @@ flag_tile(struct game *me, struct tile *grid_tile)
 		GtkWidget *img = gtk_bin_get_child(GTK_BIN(ebox));
 		gtk_image_clear(GTK_IMAGE(img));
 
+		GdkPixbuf *gpix;
+
 		int addition;  
 		if(grid_tile->is_flag)
 		{
-			char file[strlen(dir) + strlen(images) + strlen(face) + 1];
-			strcpy(file, dir);
-			strcat(file, images);
-			strcat(file, face);
-
-			gtk_image_set_from_file(GTK_IMAGE(img), file);
+			gpix = gdk_pixbuf_copy(me->face_tile);
+			gtk_image_set_from_pixbuf(GTK_IMAGE(img), gpix);
 			gtk_widget_show(ebox);
 			addition = 1;
 		}
 		else
 		{
-			char file[strlen(dir) + strlen(images) + strlen(flag) + 1];
-			strcpy(file, dir);
-			strcat(file, images);
-			strcat(file, flag);
-
-			gtk_image_set_from_file(GTK_IMAGE(img), file);
+			gpix = gdk_pixbuf_copy(me->flag_tile);
+			gtk_image_set_from_pixbuf(GTK_IMAGE(img), gpix);
 			gtk_widget_show(ebox);
 			addition = -1;
 		}
@@ -194,14 +174,10 @@ select_tile(struct game *me, struct tile *grid_tile)
 			g_signal_handlers_block_by_func(ebox, G_CALLBACK (left_right_click), me);
 
 			GtkWidget *img  = gtk_bin_get_child(GTK_BIN(ebox));	
-			int num_len = strlen(num_faces[grid_tile->adj_bombs]);
+			gtk_image_clear(GTK_IMAGE(img));
 
-			char file[strlen(dir) + strlen(images) + num_len + 1];
-			strcpy(file, dir);
-			strcat(file, images);
-			strcat(file, num_faces[grid_tile->adj_bombs]);
-
-			gtk_image_set_from_file(GTK_IMAGE(img), file);
+			GdkPixbuf *gpix = gdk_pixbuf_copy(me->num_tiles[grid_tile->adj_bombs]);
+			gtk_image_set_from_pixbuf(GTK_IMAGE(img), gpix);
 
 			grid_tile->is_selected = 1;
 
@@ -332,10 +308,11 @@ left_right_click(GtkWidget *btn, GdkEventButton *event, gpointer data)
 
 
 static void 
-add_grid_pos(struct game *me, char *file, int x, int y)
+add_grid_pos(struct game *me, int x, int y)
 {
 	GtkWidget *ebox = gtk_event_box_new();
-	GtkWidget *img = gtk_image_new_from_file(file);
+	GdkPixbuf *gpix = gdk_pixbuf_copy(me->face_tile);
+	GtkWidget *img = gtk_image_new_from_pixbuf(gpix);
 
 	gtk_container_add(GTK_CONTAINER(ebox), img);
 
@@ -361,12 +338,14 @@ remove_grid_pos(struct game *me, int x, int y)
 
 
 static void 
-reset_grid_pos(struct game *me, char *file, int x, int y)
+reset_grid_pos(struct game *me, int x, int y)
 {
 	GtkWidget *ebox = gtk_grid_get_child_at(GTK_GRID(me->grid), x, y);
 	GtkWidget *img = gtk_bin_get_child(GTK_BIN(ebox));
 	gtk_image_clear(GTK_IMAGE(img));
-	gtk_image_set_from_file(GTK_IMAGE(img), file);
+
+	GdkPixbuf *gpix = gdk_pixbuf_copy(me->face_tile);
+	gtk_image_set_from_pixbuf(GTK_IMAGE(img), gpix);
 	
 	if(g_signal_is_blocked_by_func(ebox, (GFunc) left_right_click, me))
 		g_signal_handlers_unblock_by_func(ebox, G_CALLBACK (left_right_click), me);
@@ -378,12 +357,6 @@ reset_grid_pos(struct game *me, char *file, int x, int y)
 static void 
 reset_grid(struct game *me, int row, int col)
 {	
-	char file[strlen(dir) + strlen(images) + strlen(face) + 1]; // Add 1 for null terminator.
-
-	strcpy(file, dir);
-	strcat(file, images);
-	strcat(file, face);
-
 	unsigned char 
 		width = me->game_board.width,
 		height = me->game_board.height,
@@ -399,13 +372,13 @@ reset_grid(struct game *me, int row, int col)
 		{	
 			if(i < min_h && j < min_w)
 			{
-				reset_grid_pos(me, file, j, i);
+				reset_grid_pos(me, j, i);
 			}
 			else if(i >= min_h && j < min_w)
 			{
 				if(min_h == height)
 				{
-					add_grid_pos(me, file, j, i);
+					add_grid_pos(me, j, i);
 				}
 				else
 				{
@@ -416,7 +389,7 @@ reset_grid(struct game *me, int row, int col)
 			{
 				if(min_w == width)
 				{
-					add_grid_pos(me, file, j, i);
+					add_grid_pos(me, j, i);
 				}
 				else
 				{
@@ -427,7 +400,7 @@ reset_grid(struct game *me, int row, int col)
 			{
 				if(min_h == height && min_w == width)
 				{
-					add_grid_pos(me, file, j, i);
+					add_grid_pos(me, j, i);
 				}
 				else if(max_h == height && max_w == width)
 				{
@@ -469,14 +442,11 @@ restart(struct game *me)
 	int new_h = gtk_range_get_value(GTK_RANGE(me->height_slide));
 	int new_b = gtk_range_get_value(GTK_RANGE(me->bomb_slide));
 
-	char file[strlen(dir) + strlen(images) + strlen(smile) +1];
-	strcpy(file, dir);
-	strcat(file, images);
-	strcat(file, smile);
-
 	GtkWidget *img = gtk_bin_get_child(GTK_BIN(me->restart_ebox));
 	gtk_image_clear(GTK_IMAGE(img));
-	gtk_image_set_from_file(GTK_IMAGE(img), file);
+	
+	GdkPixbuf *gpix = gdk_pixbuf_copy(me->smile_tile);
+	gtk_image_set_from_pixbuf(GTK_IMAGE(img), gpix);
 	gtk_widget_show(me->restart_ebox);
 
 	reset_grid(me, new_h - me->game_board.height, new_w - me->game_board.width);
@@ -566,17 +536,51 @@ kill_click(GtkWidget *btn, GdkEventButton *event, gpointer data)
 	kill_app(me);
 }
 
+static void
+setup_images(struct game *me)
+{
+	int nul_loc = strlen(dir) + strlen(images); // path + "Images/" 
+	char file[nul_loc + strlen(shades) + 1]; // Shades has the longest file name
+	strcpy(file, dir);
+	strcat(file, images);	
+
+	GError *ge = NULL;
+	
+	int i;
+	for(i = 0; i < 9; ++i)
+	{
+		strcpy(&file[nul_loc], num_faces[i]);
+		me->num_tiles[i] = gdk_pixbuf_new_from_file(file, &ge);
+	}
+	
+	strcpy(&file[nul_loc], smile);
+	me->smile_tile = gdk_pixbuf_new_from_file(file, &ge);	
+
+	strcpy(&file[nul_loc], shades);
+	me->shade_tile = gdk_pixbuf_new_from_file(file, &ge);
+	
+	strcpy(&file[nul_loc], bomb);
+	me->bomb_tile = gdk_pixbuf_new_from_file(file, &ge);
+	
+	strcpy(&file[nul_loc], wrong);
+	me->wrong_tile = gdk_pixbuf_new_from_file(file, &ge);
+
+	strcpy(&file[nul_loc], flag);
+	me->flag_tile = gdk_pixbuf_new_from_file(file, &ge);
+
+	strcpy(&file[nul_loc], face);
+	me->face_tile = gdk_pixbuf_new_from_file(file, &ge);
+
+	//TODO Handle Errors 
+}
+
 void 
 activate(GtkApplication* app, gpointer data)
 {
 	struct game *me = data;
 
-	srandom(time(0));
-
-	char face_file[strlen(dir) + strlen(images) + strlen(face) + 1];
-	strcpy(face_file, dir);
-	strcat(face_file, images);
-	strcat(face_file, face);
+	srandom(time(0));	
+	setup_images(me);
 
 	me->window = gtk_application_window_new(app);
 	me->counter = gtk_label_new(NULL);
@@ -587,22 +591,16 @@ activate(GtkApplication* app, gpointer data)
 	{
 		for(j = 0; j < me->game_board.width; ++j)
 		{
-			add_grid_pos(me, face_file, j, i);
+			add_grid_pos(me, j, i);
 		}
 	}
 
 	me->timer = gtk_label_new("0");
 	gtk_widget_set_size_request(me->timer, 35, 10);
 
-	char file[strlen(dir) + strlen(images) + strlen(smile) + 1];
-	strcpy(file, dir);
-	strcat(file, images);
-	strcat(file, smile);
-
 	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	me->top_grid = gtk_grid_new();
 	me->restart_ebox = gtk_event_box_new();
-	GtkWidget *smile_img = gtk_image_new_from_file(file);
 
 	GtkWidget *hbox_for_vboxes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	me->slide_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -638,6 +636,9 @@ activate(GtkApplication* app, gpointer data)
 	gtk_box_pack_start(GTK_BOX(me->slide_vbox), me->height_slide, 1, 1, 0);
 	gtk_box_pack_start(GTK_BOX(me->slide_vbox), bomb_label, 1, 1, 0);
 	gtk_box_pack_start(GTK_BOX(me->slide_vbox), me->bomb_slide, 1, 1, 0);
+
+	GdkPixbuf *gpix = gdk_pixbuf_copy(me->smile_tile);
+	GtkWidget *smile_img = gtk_image_new_from_pixbuf(gpix);
 
 	gtk_container_add(GTK_CONTAINER(me->restart_ebox), smile_img);
 	gtk_container_add(GTK_CONTAINER(me->menu_ebox), menu_label);

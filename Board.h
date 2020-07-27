@@ -13,7 +13,8 @@
  */
 struct board
 {
-	unsigned char width, height, b_count;
+	unsigned char width, height;
+	unsigned int b_count;
 	struct tile *tiles;
 };
 

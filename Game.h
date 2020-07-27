@@ -56,20 +56,18 @@ struct game
 
 	struct board game_board;
 	
-	GtkWidget *window;
+	GtkWidget	
+		*window, *grid,
 
-	GtkWidget *grid;
-	
-	GtkWidget *top_grid;
-	GtkWidget *counter;
-	GtkWidget *timer;
-	GtkWidget *restart_ebox;
-	GtkWidget *menu_ebox;
-	
-	GtkWidget *slide_vbox;
-	GtkWidget *width_slide;
-	GtkWidget *height_slide;
-	GtkWidget *bomb_slide;
+		*top_grid, *counter, *timer, 
+		*restart_ebox, *menu_ebox,
+				
+		*slide_vbox, *width_slide,
+		*height_slide, *bomb_slide;
+
+	GdkPixbuf 	
+		*num_tiles[9], *smile_tile, *shade_tile,
+		*bomb_tile, *wrong_tile, *flag_tile, *face_tile; 	
 };
 
 // Starts the application and creates all GtkWidgets
