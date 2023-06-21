@@ -2,12 +2,12 @@ mod board;
 mod style;
 
 use board::{Board, Tile};
-use style::ColorScheme;
+use style::{ColorScheme, Size};
 
 use iced::alignment::{Horizontal, Vertical};
 use iced::theme::Theme;
 use iced::widget::{
-    button, column, container, mouse_area, row, slider, text, Button, Column, Row, pick_list,
+    button, column, container, mouse_area, pick_list, row, slider, text, Button, Column, Row,
 };
 use iced::{executor, time, Length};
 use iced::{Alignment, Application, Command, Element, Settings, Subscription};
@@ -20,12 +20,7 @@ const NUMBERS: &'static [&'static str] = &[" ", "1", "2", "3", "4", "5", "6", "7
 
 pub fn main() -> iced::Result {
     Game::run(iced::Settings {
-        window: iced::window::Settings {
-            // Sizes based off of 25 px starting button size
-            size: (250, 280),
-            min_size: Some((125, 155)),
-            ..iced::window::Settings::default()
-        },
+        window: iced::window::Settings::default(),
         default_font: Some(include_bytes!(
             "/home/p0l1t1c1an/.fonts/Hack/HackNerdFont-Bold.ttf"
         )),
@@ -33,15 +28,43 @@ pub fn main() -> iced::Result {
         ..Settings::default()
     })
 }
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Debug)]
 struct VisualElements {
-    button_size: usize,
+    size: Size,
     slider_width: usize,
     slider_height: usize,
     slider_mines: usize,
     colorscheme: ColorScheme,
 }
 
+impl Default for VisualElements {
+    fn default() -> Self {
+        Self {
+            size: Size::default(),
+            slider_width: 10,
+            slider_mines: 10,
+            slider_height: 10,
+            colorscheme: ColorScheme::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+enum GameState {
+    #[default]
+    Playing,
+    Lost,
+    Won,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+enum RenderState {
+    #[default]
+    Board,
+    Menu,
+}
+
+#[derive(Debug, Default)]
 struct Game {
     board: Board,
     state: GameState,
@@ -57,7 +80,7 @@ enum Message {
     LeftClick(usize, usize),
     MiddleClick(usize, usize),
     RightClick(usize, usize),
-    UpdateButtonSize(usize),
+    UpdateSize(Size),
     UpdateSliderWidth(usize),
     UpdateSliderHeight(usize),
     UpdateSliderMines(usize),
@@ -66,23 +89,14 @@ enum Message {
     Menu,
 }
 
-#[derive(Debug, Clone, Copy)]
-enum GameState {
-    Playing,
-    Lost,
-    Won,
-}
-
-#[derive(Debug, Clone, Copy)]
-enum RenderState {
-    Board,
-    Menu,
-}
-
 impl Game {
     fn reset(&mut self) {
         self.real = self.temp;
-        self.board = Board::new(self.real.slider_height, self.real.slider_width, self.real.slider_mines);
+        self.board = Board::new(
+            self.real.slider_height,
+            self.real.slider_width,
+            self.real.slider_mines,
+        );
         self.state = GameState::Playing;
         self.render = RenderState::Board;
         self.seconds = 0;
@@ -138,24 +152,7 @@ impl Application for Game {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        let visual = VisualElements {
-            button_size: 25,
-            slider_height: 10,
-            slider_width: 10,
-            slider_mines: 10,
-            ..VisualElements::default()
-        };
-        (
-            Self {
-                board: Board::new(10, 10, 10),
-                state: GameState::Playing,
-                render: RenderState::Board,
-                seconds: 0,
-                temp: visual,
-                real: visual
-            },
-            Command::none(),
-        )
+        (Default::default(), Command::none())
     }
 
     fn title(&self) -> String {
@@ -171,21 +168,21 @@ impl Application for Game {
                     Message::RightClick(r, c) => self.right_click(r, c),
                     Message::MiddleClick(r, c) => self.middle_click(r, c),
                     Message::Tick => self.seconds += 1,
-                    Message::UpdateButtonSize(b) => self.temp.button_size = b, 
+                    Message::UpdateSize(s) => self.temp.size = s,
                     Message::UpdateSliderHeight(h) => self.temp.slider_height = h,
                     Message::UpdateSliderWidth(w) => self.temp.slider_width = w,
                     Message::UpdateSliderMines(n) => self.temp.slider_mines = n,
-                    Message::UpdateColorScheme(c) => self.temp.colorscheme = c, 
+                    Message::UpdateColorScheme(c) => self.temp.colorscheme = c,
                     Message::Menu => self.toggle_menu(),
                 };
             }
             _ => match message {
                 Message::ResetClick => self.reset(),
-                Message::UpdateButtonSize(b) => self.temp.button_size = b, 
+                Message::UpdateSize(s) => self.temp.size = s,
                 Message::UpdateSliderHeight(h) => self.temp.slider_height = h,
                 Message::UpdateSliderWidth(w) => self.temp.slider_width = w,
                 Message::UpdateSliderMines(n) => self.temp.slider_mines = n,
-                Message::UpdateColorScheme(c) => self.temp.colorscheme = c, 
+                Message::UpdateColorScheme(c) => self.temp.colorscheme = c,
                 Message::Menu => self.toggle_menu(),
                 _ => {}
             },
@@ -193,8 +190,8 @@ impl Application for Game {
 
         if let Message::ResetClick = message {
             iced::window::resize(
-                (self.real.slider_width * self.real.button_size) as u32 + 2,
-                30 + (self.real.slider_height * self.real.button_size) as u32,
+                self.real.slider_width as u32 * self.real.size.mine() + 2,
+                45 + self.real.slider_height as u32 * self.real.size.mine(),
             )
         } else {
             Command::none()
@@ -232,15 +229,16 @@ impl Application for Game {
                                     .width(Length::Fill)
                                     .height(Length::Fill)
                                     .horizontal_alignment(Horizontal::Center)
-                                    .vertical_alignment(Vertical::Center),
+                                    .vertical_alignment(Vertical::Center)
+                                    .size(self.real.size.text()),
                                 )
                                 .center_x()
                                 .center_y()
                                 .width(Length::Fill)
                                 .height(Length::Fill),
                             )
-                            .width(self.real.button_size as u16)
-                            .height(self.real.button_size as u16)
+                            .width(self.real.size.mine() as u16)
+                            .height(self.real.size.mine() as u16)
                             .style(if (r + c) % 2 == 0 {
                                 self.real.colorscheme.light().into()
                             } else {
@@ -264,60 +262,78 @@ impl Application for Game {
                 let width_text = row!(
                     text("Width")
                         .width(Length::Fill)
-                        .horizontal_alignment(Horizontal::Left),
+                        .horizontal_alignment(Horizontal::Left)
+                        .size(self.real.size.text()),
                     text(format!("{:0>2}", self.temp.slider_width))
                         .width(Length::Fill)
-                        .horizontal_alignment(Horizontal::Right),
+                        .horizontal_alignment(Horizontal::Right)
+                        .size(self.real.size.text()),
                 )
                 .padding(10);
                 let width_slider = slider(5..=50, self.temp.slider_width as u32, |t| {
                     Message::UpdateSliderWidth(t as usize)
-                }).style(self.real.colorscheme.light());
+                })
+                .style(self.real.colorscheme.light());
 
                 let height_text = row!(
                     text("Height")
                         .width(Length::Fill)
-                        .horizontal_alignment(Horizontal::Left),
+                        .horizontal_alignment(Horizontal::Left)
+                        .size(self.real.size.text()),
                     text(format!("{:0>2}", self.temp.slider_height))
                         .width(Length::Fill)
-                        .horizontal_alignment(Horizontal::Right),
+                        .horizontal_alignment(Horizontal::Right)
+                        .size(self.real.size.text()),
                 )
                 .padding(10);
                 let height_slider = slider(5..=50, self.temp.slider_height as u32, |t| {
                     Message::UpdateSliderHeight(t as usize)
-                }).style(self.real.colorscheme.light());
+                })
+                .style(self.real.colorscheme.light());
 
                 let mines_text = row!(
                     text("Mine Count")
                         .width(Length::Fill)
-                        .horizontal_alignment(Horizontal::Left),
+                        .horizontal_alignment(Horizontal::Left)
+                        .size(self.real.size.text()),
                     text(format!("{:0>3}", self.temp.slider_mines))
                         .width(Length::Fill)
-                        .horizontal_alignment(Horizontal::Right),
+                        .horizontal_alignment(Horizontal::Right)
+                        .size(self.real.size.text()),
                 )
                 .padding(10);
                 let mines_slider = slider(0..=500, self.temp.slider_mines as u32, |t| {
                     Message::UpdateSliderMines(t as usize)
-                }).style(self.real.colorscheme.light());
+                })
+                .style(self.real.colorscheme.light());
 
-                let button_size = column!(text("Button Size"),
-                    pick_list(vec!(25, 30, 35, 40), 
-                    Some(self.temp.button_size), 
-                    |size| {Message::UpdateButtonSize(size)}
-                )).padding(5);
- 
-                let colorscheme = column!(text("Color Scheme"), 
-                    pick_list(ColorScheme::all_options(),
-                    Some(self.temp.colorscheme),
-                    |c| {Message::UpdateColorScheme(c)}
-                )).padding(5);
+                let button_size = column!(
+                    text("Button Size").size(self.real.size.text()),
+                    pick_list(Size::all_options(), Some(self.temp.size), |size| {
+                        Message::UpdateSize(size)
+                    })
+                    .style(self.real.colorscheme.light())
+                    .text_size(self.real.size.text())
+                )
+                .spacing(5);
 
-                let pick_lists = row!(button_size, colorscheme)
-                    .spacing(150)
-                    .padding(10);
+                let colorscheme = column!(
+                    text("Color Scheme").size(self.real.size.text()),
+                    pick_list(
+                        ColorScheme::all_options(),
+                        Some(self.temp.colorscheme),
+                        |c| { Message::UpdateColorScheme(c) }
+                    )
+                    .style(self.real.colorscheme.light())
+                    .text_size(self.real.size.text())
+                )
+                .spacing(5);
 
-                let reset = button("Reset")
+                let pick_lists = row!(button_size, colorscheme).spacing(150).padding(10);
+
+                let reset = button(text("Reset").size(self.real.size.text()))
                     .on_press(Message::ResetClick)
+                    .padding(7.5)
                     .style(self.real.colorscheme.light().into());
 
                 let row = column!(
@@ -336,31 +352,33 @@ impl Application for Game {
             }
         };
 
-        let duration = text(format!(" {:0>4}", self.seconds));
+        let duration = text(format!(" {:0>4}", self.seconds)).size(self.real.size.text());
         let count = text(format!(
             "󰈻 {:0>3}",
             self.board.mines_count() - self.board.flag_count()
-        ));
+        ))
+        .size(self.real.size.text());
 
         let menu = Button::new(
-            container("Menu")
+            container(text("Menu").size(self.real.size.text()))
                 .center_x()
                 .center_y()
                 .width(Length::Fill)
                 .height(Length::Fill),
         )
         .on_press(Message::Menu)
+        .padding(7.5)
         .style(self.real.colorscheme.light().into());
 
         let top_row = row!(menu, duration, count)
             .spacing(40)
-            .height(Length::Fixed(30.0))
+            .height(Length::Fixed(45.0))
             .align_items(Alignment::Center);
 
         rows.insert(0, top_row.into());
 
         let content = container(Column::with_children(rows).align_items(Alignment::Center))
-            .style (self.real.colorscheme.background())
+            .style(self.real.colorscheme.background())
             .width(Length::Fill)
             .height(Length::Fill)
             .center_x()
@@ -376,12 +394,14 @@ impl Application for Game {
                                 "You Won!"
                             } else {
                                 "You Lost"
-                            }),
-                            button("Reset")
+                            })
+                            .size(self.real.size.text()),
+                            button(text("Reset").size(self.real.size.text()))
                                 .on_press(Message::ResetClick)
+                                .padding(7.5)
                                 .style(self.real.colorscheme.light().into()),
                         )
-                        .max_width(125)
+                        .max_width(225)
                         .spacing(20)
                         .padding(20)
                         .align_items(Alignment::Center),
@@ -390,7 +410,7 @@ impl Application for Game {
                     .into()
                 })
                 .anchor(Anchor::North)
-                .offset(Offset { x: 0.0, y: 45.0 })
+                .offset(Offset { x: 0.0, y: 60.0 })
                 .into(),
             }
         } else {
