@@ -1,6 +1,7 @@
 
-use iced::theme::{Container, Theme};
-use iced::widget::{button, container};
+use iced::theme::{Container, Theme, Button, Slider};
+use iced::widget::{button, container, slider};
+use iced::widget::slider::{Handle, HandleShape, Rail};
 use iced::color;
 use iced::{Background, Color};
 
@@ -41,6 +42,12 @@ impl iced::widget::button::StyleSheet for SimpleStyle {
     }
 }
 
+impl From<SimpleStyle> for Button {
+    fn from(style: SimpleStyle) -> Self {
+        Self::Custom(Box::new(style))
+    }
+}
+
 impl iced::widget::container::StyleSheet for SimpleStyle {
     type Style = Theme;
 
@@ -60,6 +67,57 @@ impl From<SimpleStyle> for Container {
         Self::Custom(Box::new(style))
     }
 }
+
+impl iced::widget::slider::StyleSheet for SimpleStyle {
+    type Style = Theme; 
+
+    fn active(&self, _style: &Self::Style) -> slider::Appearance {
+        slider::Appearance {
+            rail: Rail {
+                colors: (self.back, self.text),
+                width: 5.0,
+            },
+            handle: Handle {
+                shape: HandleShape::Circle{radius: 7.5},
+                color: self.text,
+                border_width: 1.0,
+                border_color: self.highlight_back,
+            }
+        }
+    }
+
+    fn hovered(&self, _style: &Self::Style) -> slider::Appearance {
+        // Averages color with white 
+        let mut bright = self.text.into_rgba8(); 
+        bright.iter_mut().for_each(|c| {
+            *c = *c/2 + 128; 
+        });
+
+        slider::Appearance {
+            rail: Rail {
+                colors: (self.back, self.text),
+                width: 5.0,
+            },
+            handle: Handle {
+                shape: HandleShape::Circle{radius: 7.5},
+                color: Color::from_rgb8(bright[0], bright[1], bright[2]),
+                border_width: 1.0,
+                border_color: self.highlight_back,
+            }
+        }
+    }
+
+    fn dragging(&self, _style: &Self::Style) -> slider::Appearance {
+        self.hovered(_style)    
+    }
+}
+
+impl From<SimpleStyle> for Slider {
+    fn from(style: SimpleStyle) -> Self {
+        Self::Custom(Box::new(style))
+    }
+}
+
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum ColorScheme {

@@ -9,7 +9,7 @@ use iced::theme::Theme;
 use iced::widget::{
     button, column, container, mouse_area, row, slider, text, Button, Column, Row, pick_list,
 };
-use iced::{executor, theme, time, Length};
+use iced::{executor, time, Length};
 use iced::{Alignment, Application, Command, Element, Settings, Subscription};
 
 use iced_aw::floating_element::{Anchor, FloatingElement, Offset};
@@ -21,7 +21,7 @@ const NUMBERS: &'static [&'static str] = &[" ", "1", "2", "3", "4", "5", "6", "7
 pub fn main() -> iced::Result {
     Game::run(iced::Settings {
         window: iced::window::Settings {
-            // Sizes based off of 25 px starting size
+            // Sizes based off of 25 px starting button size
             size: (250, 280),
             min_size: Some((125, 155)),
             ..iced::window::Settings::default()
@@ -29,7 +29,7 @@ pub fn main() -> iced::Result {
         default_font: Some(include_bytes!(
             "/home/p0l1t1c1an/.fonts/Hack/HackNerdFont-Bold.ttf"
         )),
-        default_text_size: 12.0,
+        default_text_size: 15.0,
         ..Settings::default()
     })
 }
@@ -226,10 +226,13 @@ impl Application for Game {
                                     text(match self.board.get_tile(r, c) {
                                         Tile::Uncleared | Tile::UnclearedMine => " ",
                                         Tile::Cleared => NUMBERS[self.board.adjacent_mines(r, c)],
-                                        Tile::ClearedMine => "󰷚",
+                                        Tile::ClearedMine => "󰚑",
                                         Tile::Flagged | Tile::FlaggedMine => "󰈻",
                                     })
-                                    .width(Length::Fixed(9.0)),
+                                    .width(Length::Fill)
+                                    .height(Length::Fill)
+                                    .horizontal_alignment(Horizontal::Center)
+                                    .vertical_alignment(Vertical::Center),
                                 )
                                 .center_x()
                                 .center_y()
@@ -239,9 +242,9 @@ impl Application for Game {
                             .width(self.real.button_size as u16)
                             .height(self.real.button_size as u16)
                             .style(if (r + c) % 2 == 0 {
-                                theme::Button::Custom(Box::new(self.real.colorscheme.light()))
+                                self.real.colorscheme.light().into()
                             } else {
-                                theme::Button::Custom(Box::new(self.real.colorscheme.dark()))
+                                self.real.colorscheme.dark().into()
                             });
 
                             mouse_area(match self.board.get_tile(r, c) {
@@ -269,7 +272,7 @@ impl Application for Game {
                 .padding(10);
                 let width_slider = slider(5..=50, self.temp.slider_width as u32, |t| {
                     Message::UpdateSliderWidth(t as usize)
-                });
+                }).style(self.real.colorscheme.light());
 
                 let height_text = row!(
                     text("Height")
@@ -282,7 +285,7 @@ impl Application for Game {
                 .padding(10);
                 let height_slider = slider(5..=50, self.temp.slider_height as u32, |t| {
                     Message::UpdateSliderHeight(t as usize)
-                });
+                }).style(self.real.colorscheme.light());
 
                 let mines_text = row!(
                     text("Mine Count")
@@ -295,19 +298,19 @@ impl Application for Game {
                 .padding(10);
                 let mines_slider = slider(0..=500, self.temp.slider_mines as u32, |t| {
                     Message::UpdateSliderMines(t as usize)
-                });
+                }).style(self.real.colorscheme.light());
 
                 let button_size = column!(text("Button Size"),
                     pick_list(vec!(25, 30, 35, 40), 
                     Some(self.temp.button_size), 
                     |size| {Message::UpdateButtonSize(size)}
-                ));
+                )).padding(5);
  
                 let colorscheme = column!(text("Color Scheme"), 
                     pick_list(ColorScheme::all_options(),
                     Some(self.temp.colorscheme),
                     |c| {Message::UpdateColorScheme(c)}
-                ));
+                )).padding(5);
 
                 let pick_lists = row!(button_size, colorscheme)
                     .spacing(150)
@@ -315,7 +318,7 @@ impl Application for Game {
 
                 let reset = button("Reset")
                     .on_press(Message::ResetClick)
-                    .style(theme::Button::Custom(Box::new(self.real.colorscheme.light())));
+                    .style(self.real.colorscheme.light().into());
 
                 let row = column!(
                     width_text,
@@ -347,7 +350,7 @@ impl Application for Game {
                 .height(Length::Fill),
         )
         .on_press(Message::Menu)
-        .style(theme::Button::Custom(Box::new(self.real.colorscheme.light())));
+        .style(self.real.colorscheme.light().into());
 
         let top_row = row!(menu, duration, count)
             .spacing(40)
@@ -357,7 +360,7 @@ impl Application for Game {
         rows.insert(0, top_row.into());
 
         let content = container(Column::with_children(rows).align_items(Alignment::Center))
-            .style(self.real.colorscheme.background())
+            .style (self.real.colorscheme.background())
             .width(Length::Fill)
             .height(Length::Fill)
             .center_x()
@@ -376,7 +379,7 @@ impl Application for Game {
                             }),
                             button("Reset")
                                 .on_press(Message::ResetClick)
-                                .style(theme::Button::Custom(Box::new(self.real.colorscheme.light()))),
+                                .style(self.real.colorscheme.light().into()),
                         )
                         .max_width(125)
                         .spacing(20)
