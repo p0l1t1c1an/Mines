@@ -1,14 +1,16 @@
 mod board;
+mod style;
 
 use board::{Board, Tile};
+use style::ColorScheme;
 
 use iced::alignment::{Horizontal, Vertical};
-use iced::theme::{Container, Theme};
+use iced::theme::Theme;
 use iced::widget::{
-    button, column, container, mouse_area, row, slider, text, Button, Column, Row,
+    button, column, container, mouse_area, row, slider, text, Button, Column, Row, pick_list,
 };
-use iced::{color, executor, theme, time, Length};
-use iced::{Alignment, Application, Background, Color, Command, Element, Settings, Subscription};
+use iced::{executor, theme, time, Length};
+use iced::{Alignment, Application, Command, Element, Settings, Subscription};
 
 use iced_aw::floating_element::{Anchor, FloatingElement, Offset};
 
@@ -16,75 +18,28 @@ use std::time::Duration;
 
 const NUMBERS: &'static [&'static str] = &[" ", "1", "2", "3", "4", "5", "6", "7", "8"];
 
-#[derive(Clone, Copy)]
-struct SimpleStyle {
-    back: Color,
-    highlight_back: Color,
-    text: Color,
-}
-
-impl iced::widget::button::StyleSheet for SimpleStyle {
-    type Style = Theme;
-
-    fn active(&self, _style: &Self::Style) -> button::Appearance {
-        button::Appearance {
-            background: Some(Background::Color(self.back)),
-            text_color: self.text,
-            ..button::Appearance::default()
-        }
-    }
-
-    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
-        button::Appearance {
-            background: Some(Background::Color(self.highlight_back)),
-            text_color: self.text,
-            ..button::Appearance::default()
-        }
-    }
-
-    fn disabled(&self, _style: &Self::Style) -> button::Appearance {
-        button::Appearance {
-            background: Some(Background::Color(self.text)),
-            text_color: self.back,
-            ..button::Appearance::default()
-        }
-    }
-}
-
-impl iced::widget::container::StyleSheet for SimpleStyle {
-    type Style = Theme;
-
-    fn appearance(&self, _style: &Self::Style) -> container::Appearance {
-        container::Appearance {
-            background: Some(Background::Color(self.back)),
-            text_color: Some(self.text),
-            border_color: self.highlight_back,
-            border_width: 1.0,
-            ..container::Appearance::default()
-        }
-    }
-}
-
-impl From<SimpleStyle> for Container {
-    fn from(style: SimpleStyle) -> Self {
-        Self::Custom(Box::new(style))
-    }
-}
-
 pub fn main() -> iced::Result {
     Game::run(iced::Settings {
         window: iced::window::Settings {
+            // Sizes based off of 25 px starting size
             size: (250, 280),
             min_size: Some((125, 155)),
-            max_size: Some((1250, 1280)),
             ..iced::window::Settings::default()
         },
         default_font: Some(include_bytes!(
-            "/home/p0l1t1c1an/.fonts/Hack/Hack Bold Nerd Font Complete.ttf"
+            "/home/p0l1t1c1an/.fonts/Hack/HackNerdFont-Bold.ttf"
         )),
         default_text_size: 12.0,
         ..Settings::default()
     })
+}
+#[derive(Clone, Copy, Default)]
+struct VisualElements {
+    button_size: usize,
+    slider_width: usize,
+    slider_height: usize,
+    slider_mines: usize,
+    colorscheme: ColorScheme,
 }
 
 struct Game {
@@ -92,12 +47,8 @@ struct Game {
     state: GameState,
     render: RenderState,
     seconds: usize,
-    slider_width: usize,
-    slider_height: usize,
-    slider_mines: usize,
-    light_style: SimpleStyle,
-    dark_style: SimpleStyle,
-    background_style: SimpleStyle,
+    temp: VisualElements,
+    real: VisualElements,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -106,9 +57,11 @@ enum Message {
     LeftClick(usize, usize),
     MiddleClick(usize, usize),
     RightClick(usize, usize),
+    UpdateButtonSize(usize),
     UpdateSliderWidth(usize),
     UpdateSliderHeight(usize),
     UpdateSliderMines(usize),
+    UpdateColorScheme(ColorScheme),
     Tick,
     Menu,
 }
@@ -128,7 +81,8 @@ enum RenderState {
 
 impl Game {
     fn reset(&mut self) {
-        self.board = Board::new(self.slider_height, self.slider_width, self.slider_mines);
+        self.real = self.temp;
+        self.board = Board::new(self.real.slider_height, self.real.slider_width, self.real.slider_mines);
         self.state = GameState::Playing;
         self.render = RenderState::Board;
         self.seconds = 0;
@@ -184,36 +138,21 @@ impl Application for Game {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        let light_style = SimpleStyle {
-            back: color!(0x4848AD),
-            highlight_back: color!(0x6161BD),
-            text: color!(0xCCCCF5),
+        let visual = VisualElements {
+            button_size: 25,
+            slider_height: 10,
+            slider_width: 10,
+            slider_mines: 10,
+            ..VisualElements::default()
         };
-
-        let dark_style = SimpleStyle {
-            back: color!(0x3C3C90),
-            highlight_back: color!(0x6161BD),
-            text: color!(0x9999EA),
-        };
-
-        let background_style = SimpleStyle {
-            back: color!(0x242456),
-            highlight_back: color!(0x6161BD),
-            text: color!(0x9999EA),
-        };
-
         (
             Self {
                 board: Board::new(10, 10, 10),
                 state: GameState::Playing,
                 render: RenderState::Board,
                 seconds: 0,
-                slider_height: 10,
-                slider_width: 10,
-                slider_mines: 10,
-                light_style,
-                dark_style,
-                background_style,
+                temp: visual,
+                real: visual
             },
             Command::none(),
         )
@@ -232,17 +171,21 @@ impl Application for Game {
                     Message::RightClick(r, c) => self.right_click(r, c),
                     Message::MiddleClick(r, c) => self.middle_click(r, c),
                     Message::Tick => self.seconds += 1,
-                    Message::UpdateSliderHeight(h) => self.slider_height = h,
-                    Message::UpdateSliderWidth(w) => self.slider_width = w,
-                    Message::UpdateSliderMines(n) => self.slider_mines = n,
+                    Message::UpdateButtonSize(b) => self.temp.button_size = b, 
+                    Message::UpdateSliderHeight(h) => self.temp.slider_height = h,
+                    Message::UpdateSliderWidth(w) => self.temp.slider_width = w,
+                    Message::UpdateSliderMines(n) => self.temp.slider_mines = n,
+                    Message::UpdateColorScheme(c) => self.temp.colorscheme = c, 
                     Message::Menu => self.toggle_menu(),
                 };
             }
             _ => match message {
                 Message::ResetClick => self.reset(),
-                Message::UpdateSliderHeight(h) => self.slider_height = h,
-                Message::UpdateSliderWidth(w) => self.slider_width = w,
-                Message::UpdateSliderMines(n) => self.slider_mines = n,
+                Message::UpdateButtonSize(b) => self.temp.button_size = b, 
+                Message::UpdateSliderHeight(h) => self.temp.slider_height = h,
+                Message::UpdateSliderWidth(w) => self.temp.slider_width = w,
+                Message::UpdateSliderMines(n) => self.temp.slider_mines = n,
+                Message::UpdateColorScheme(c) => self.temp.colorscheme = c, 
                 Message::Menu => self.toggle_menu(),
                 _ => {}
             },
@@ -250,8 +193,8 @@ impl Application for Game {
 
         if let Message::ResetClick = message {
             iced::window::resize(
-                self.slider_width as u32 * 25 + 2,
-                30 + self.slider_height as u32 * 25,
+                (self.real.slider_width * self.real.button_size) as u32 + 2,
+                30 + (self.real.slider_height * self.real.button_size) as u32,
             )
         } else {
             Command::none()
@@ -293,12 +236,12 @@ impl Application for Game {
                                 .width(Length::Fill)
                                 .height(Length::Fill),
                             )
-                            .width(25)
-                            .height(25)
+                            .width(self.real.button_size as u16)
+                            .height(self.real.button_size as u16)
                             .style(if (r + c) % 2 == 0 {
-                                theme::Button::Custom(Box::new(self.light_style))
+                                theme::Button::Custom(Box::new(self.real.colorscheme.light()))
                             } else {
-                                theme::Button::Custom(Box::new(self.dark_style))
+                                theme::Button::Custom(Box::new(self.real.colorscheme.dark()))
                             });
 
                             mouse_area(match self.board.get_tile(r, c) {
@@ -319,12 +262,12 @@ impl Application for Game {
                     text("Width")
                         .width(Length::Fill)
                         .horizontal_alignment(Horizontal::Left),
-                    text(format!("{:0>2}", self.slider_width))
+                    text(format!("{:0>2}", self.temp.slider_width))
                         .width(Length::Fill)
                         .horizontal_alignment(Horizontal::Right),
                 )
                 .padding(10);
-                let width_slider = slider(5..=50, self.slider_width as u32, |t| {
+                let width_slider = slider(5..=50, self.temp.slider_width as u32, |t| {
                     Message::UpdateSliderWidth(t as usize)
                 });
 
@@ -332,12 +275,12 @@ impl Application for Game {
                     text("Height")
                         .width(Length::Fill)
                         .horizontal_alignment(Horizontal::Left),
-                    text(format!("{:0>2}", self.slider_height))
+                    text(format!("{:0>2}", self.temp.slider_height))
                         .width(Length::Fill)
                         .horizontal_alignment(Horizontal::Right),
                 )
                 .padding(10);
-                let height_slider = slider(5..=50, self.slider_height as u32, |t| {
+                let height_slider = slider(5..=50, self.temp.slider_height as u32, |t| {
                     Message::UpdateSliderHeight(t as usize)
                 });
 
@@ -345,18 +288,34 @@ impl Application for Game {
                     text("Mine Count")
                         .width(Length::Fill)
                         .horizontal_alignment(Horizontal::Left),
-                    text(format!("{:0>3}", self.slider_mines))
+                    text(format!("{:0>3}", self.temp.slider_mines))
                         .width(Length::Fill)
                         .horizontal_alignment(Horizontal::Right),
                 )
                 .padding(10);
-                let mines_slider = slider(0..=500, self.slider_mines as u32, |t| {
+                let mines_slider = slider(0..=500, self.temp.slider_mines as u32, |t| {
                     Message::UpdateSliderMines(t as usize)
                 });
 
+                let button_size = column!(text("Button Size"),
+                    pick_list(vec!(25, 30, 35, 40), 
+                    Some(self.temp.button_size), 
+                    |size| {Message::UpdateButtonSize(size)}
+                ));
+ 
+                let colorscheme = column!(text("Color Scheme"), 
+                    pick_list(ColorScheme::all_options(),
+                    Some(self.temp.colorscheme),
+                    |c| {Message::UpdateColorScheme(c)}
+                ));
+
+                let pick_lists = row!(button_size, colorscheme)
+                    .spacing(150)
+                    .padding(10);
+
                 let reset = button("Reset")
                     .on_press(Message::ResetClick)
-                    .style(theme::Button::Custom(Box::new(self.light_style)));
+                    .style(theme::Button::Custom(Box::new(self.real.colorscheme.light())));
 
                 let row = column!(
                     width_text,
@@ -365,6 +324,7 @@ impl Application for Game {
                     height_slider,
                     mines_text,
                     mines_slider,
+                    pick_lists,
                     reset
                 )
                 .align_items(Alignment::Center);
@@ -387,7 +347,7 @@ impl Application for Game {
                 .height(Length::Fill),
         )
         .on_press(Message::Menu)
-        .style(theme::Button::Custom(Box::new(self.light_style)));
+        .style(theme::Button::Custom(Box::new(self.real.colorscheme.light())));
 
         let top_row = row!(menu, duration, count)
             .spacing(40)
@@ -397,7 +357,7 @@ impl Application for Game {
         rows.insert(0, top_row.into());
 
         let content = container(Column::with_children(rows).align_items(Alignment::Center))
-            .style(self.background_style)
+            .style(self.real.colorscheme.background())
             .width(Length::Fill)
             .height(Length::Fill)
             .center_x()
@@ -416,14 +376,14 @@ impl Application for Game {
                             }),
                             button("Reset")
                                 .on_press(Message::ResetClick)
-                                .style(theme::Button::Custom(Box::new(self.light_style))),
+                                .style(theme::Button::Custom(Box::new(self.real.colorscheme.light()))),
                         )
                         .max_width(125)
                         .spacing(20)
                         .padding(20)
                         .align_items(Alignment::Center),
                     )
-                    .style(self.background_style)
+                    .style(self.real.colorscheme.background())
                     .into()
                 })
                 .anchor(Anchor::North)
