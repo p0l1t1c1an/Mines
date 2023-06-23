@@ -1,7 +1,7 @@
 use iced::color;
-use iced::theme::{Button, Container, PickList, Slider, Theme};
+use iced::theme::{Button, Container, PickList, Scrollable, Slider, Theme};
 use iced::widget::slider::{Handle, HandleShape, Rail};
-use iced::widget::{button, container, pick_list, slider};
+use iced::widget::{button, container, pick_list, scrollable, slider};
 use iced::{Background, Color};
 
 use std::fmt::{self, Display};
@@ -106,8 +106,8 @@ impl iced::widget::slider::StyleSheet for SimpleStyle {
         }
     }
 
-    fn dragging(&self, _style: &Self::Style) -> slider::Appearance {
-        self.hovered(_style)
+    fn dragging(&self, style: &Self::Style) -> slider::Appearance {
+        self.hovered(style)
     }
 }
 
@@ -163,7 +163,42 @@ impl iced::overlay::menu::StyleSheet for SimpleStyle {
 
 impl From<SimpleStyle> for PickList {
     fn from(style: SimpleStyle) -> Self {
-        Self::Custom(Rc::new(SimpleStyle{..style}), Rc::new(style))
+        Self::Custom(Rc::new(SimpleStyle { ..style }), Rc::new(style))
+    }
+}
+
+pub struct TransparentStyle;
+
+impl scrollable::StyleSheet for TransparentStyle {
+    type Style = Theme;
+
+    fn active(&self, _style: &Self::Style) -> scrollable::Scrollbar {
+        scrollable::Scrollbar {
+            background: None,
+            border_radius: 0.0,
+            border_width: 0.0,
+            border_color: Color::TRANSPARENT,
+            scroller: scrollable::Scroller {
+                color: Color::TRANSPARENT,
+                border_radius: 0.0,
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
+            },
+        }
+    }
+
+    fn hovered(
+        &self,
+        style: &Self::Style,
+        _is_mouse_over_scrollbar: bool,
+    ) -> scrollable::Scrollbar {
+        self.active(style)
+    }
+}
+
+impl From<TransparentStyle> for Scrollable {
+    fn from(style: TransparentStyle) -> Self {
+        Self::Custom(Box::new(style))
     }
 }
 

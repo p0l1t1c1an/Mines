@@ -2,16 +2,16 @@ mod board;
 mod style;
 
 use board::{Board, Tile};
-use iced::subscription::events_with;
-use style::{ColorScheme, Size};
+use style::{ColorScheme, Size, TransparentStyle};
 
 use iced::alignment::{Horizontal, Vertical};
 use iced::theme::Theme;
 use iced::widget::{
-    button, column, container, mouse_area, pick_list, row, slider, text, Button, Column, Row,
+    button, column, container, mouse_area, pick_list, row, scrollable, slider, text, Button,
+    Column, Row,
 };
-use iced::{executor, time, window};
-use iced::{Alignment, Application, Command, Element, Event, Length, Settings, Subscription};
+use iced::{executor, time};
+use iced::{Alignment, Application, Command, Element, Length, Settings, Subscription};
 
 use iced_aw::floating_element::{Anchor, FloatingElement, Offset};
 
@@ -21,8 +21,8 @@ const NUMBERS: &'static [&'static str] = &[" ", "1", "2", "3", "4", "5", "6", "7
 
 pub fn main() -> iced::Result {
     Game::run(iced::Settings {
-        window: iced::window::Settings { 
-            min_size: Some((450,495)), // 10x10 on largest Size 
+        window: iced::window::Settings {
+            min_size: Some((450, 495)), // 10x10 on largest Size
             ..iced::window::Settings::default()
         },
         default_font: Some(include_bytes!(
@@ -75,7 +75,6 @@ struct Game {
     state: GameState,
     render: RenderState,
     seconds: usize,
-    window_size: Option<(u32, u32)>,
     temp: VisualElements,
     real: VisualElements,
 }
@@ -92,7 +91,6 @@ enum Message {
     UpdateSliderMines(usize),
     UpdateColorScheme(ColorScheme),
     Tick,
-    ResizedWindow(u32, u32),
     Menu,
 }
 
@@ -167,11 +165,6 @@ impl Application for Game {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
-/*        let (rows, cols) = self.board.dimensions();
-        let b_w = self.real.size.mine() * cols as u32;
-        let b_h = self.real.size.mine() * rows as u32;
-        println!("Window: {:?}, Board: {:?}", self.window_size.unwrap_or((0,0)), (b_w, b_h));
-      */
         match self.state {
             GameState::Playing => {
                 match message {
@@ -180,7 +173,6 @@ impl Application for Game {
                     Message::RightClick(r, c) => self.right_click(r, c),
                     Message::MiddleClick(r, c) => self.middle_click(r, c),
                     Message::Tick => self.seconds += 1,
-                    Message::ResizedWindow(w, h) => self.window_size = Some((w, h)),
                     Message::UpdateSize(s) => self.temp.size = s,
                     Message::UpdateSliderHeight(h) => self.temp.slider_height = h,
                     Message::UpdateSliderWidth(w) => self.temp.slider_width = w,
@@ -205,24 +197,17 @@ impl Application for Game {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        Subscription::batch(vec![events_with(|event, _status| match event {
-            Event::Window(window_event) => match window_event {
-                window::Event::Resized{width, height} => Some(Message::ResizedWindow(width, height)),
-                _ => None,
-            },
-            _ => None,
-        }),
         match self.render {
             RenderState::Board => match self.state {
                 GameState::Playing => time::every(Duration::from_secs(1)).map(|_| Message::Tick),
                 _ => Subscription::none(),
             },
             _ => Subscription::none(),
-        }])
+        }
     }
 
     fn view(&self) -> Element<Message> {
-        let mut rows: Vec<_> = match self.render {
+        let rows: Vec<_> = match self.render {
             RenderState::Board => self
                 .board
                 .rows()
@@ -389,9 +374,11 @@ impl Application for Game {
             .height(Length::Fixed(45.0))
             .align_items(Alignment::Center);
 
-        rows.insert(0, top_row.into());
+        let board = scrollable(Column::with_children(rows).align_items(Alignment::Center))
+            .horizontal_scroll(scrollable::Properties::default())
+            .style(TransparentStyle);
 
-        let content = container(Column::with_children(rows).align_items(Alignment::Center))
+        let content = container(column!(top_row, board).align_items(Alignment::Center))
             .style(self.real.colorscheme.background())
             .width(Length::Fill)
             .height(Length::Fill)

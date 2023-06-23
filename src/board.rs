@@ -70,10 +70,6 @@ impl Board {
         r * c
     }
 
-    pub fn dimensions(&self) -> (usize, usize) {
-        self.grid.size()
-    }
-
     pub fn get_tile(&self, r: usize, c: usize) -> Tile {
         self.grid[(r, c)]
     }
