@@ -2,6 +2,7 @@ mod board;
 mod style;
 
 use board::{Board, Tile};
+use iced::subscription::events_with;
 use style::{ColorScheme, Size};
 
 use iced::alignment::{Horizontal, Vertical};
@@ -9,8 +10,8 @@ use iced::theme::Theme;
 use iced::widget::{
     button, column, container, mouse_area, pick_list, row, slider, text, Button, Column, Row,
 };
-use iced::{executor, time, Length};
-use iced::{Alignment, Application, Command, Element, Settings, Subscription};
+use iced::{executor, time, window};
+use iced::{Alignment, Application, Command, Element, Event, Length, Settings, Subscription};
 
 use iced_aw::floating_element::{Anchor, FloatingElement, Offset};
 
@@ -20,7 +21,10 @@ const NUMBERS: &'static [&'static str] = &[" ", "1", "2", "3", "4", "5", "6", "7
 
 pub fn main() -> iced::Result {
     Game::run(iced::Settings {
-        window: iced::window::Settings::default(),
+        window: iced::window::Settings { 
+            min_size: Some((450,495)), // 10x10 on largest Size 
+            ..iced::window::Settings::default()
+        },
         default_font: Some(include_bytes!(
             "/home/p0l1t1c1an/.fonts/Hack/HackNerdFont-Bold.ttf"
         )),
@@ -28,6 +32,7 @@ pub fn main() -> iced::Result {
         ..Settings::default()
     })
 }
+
 #[derive(Clone, Copy, Debug)]
 struct VisualElements {
     size: Size,
@@ -70,11 +75,12 @@ struct Game {
     state: GameState,
     render: RenderState,
     seconds: usize,
+    window_size: Option<(u32, u32)>,
     temp: VisualElements,
     real: VisualElements,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 enum Message {
     ResetClick,
     LeftClick(usize, usize),
@@ -86,6 +92,7 @@ enum Message {
     UpdateSliderMines(usize),
     UpdateColorScheme(ColorScheme),
     Tick,
+    ResizedWindow(u32, u32),
     Menu,
 }
 
@@ -160,6 +167,11 @@ impl Application for Game {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
+/*        let (rows, cols) = self.board.dimensions();
+        let b_w = self.real.size.mine() * cols as u32;
+        let b_h = self.real.size.mine() * rows as u32;
+        println!("Window: {:?}, Board: {:?}", self.window_size.unwrap_or((0,0)), (b_w, b_h));
+      */
         match self.state {
             GameState::Playing => {
                 match message {
@@ -168,6 +180,7 @@ impl Application for Game {
                     Message::RightClick(r, c) => self.right_click(r, c),
                     Message::MiddleClick(r, c) => self.middle_click(r, c),
                     Message::Tick => self.seconds += 1,
+                    Message::ResizedWindow(w, h) => self.window_size = Some((w, h)),
                     Message::UpdateSize(s) => self.temp.size = s,
                     Message::UpdateSliderHeight(h) => self.temp.slider_height = h,
                     Message::UpdateSliderWidth(w) => self.temp.slider_width = w,
@@ -188,24 +201,24 @@ impl Application for Game {
             },
         }
 
-        if let Message::ResetClick = message {
-            iced::window::resize(
-                self.real.slider_width as u32 * self.real.size.mine() + 2,
-                45 + self.real.slider_height as u32 * self.real.size.mine(),
-            )
-        } else {
-            Command::none()
-        }
+        Command::none()
     }
 
     fn subscription(&self) -> Subscription<Message> {
+        Subscription::batch(vec![events_with(|event, _status| match event {
+            Event::Window(window_event) => match window_event {
+                window::Event::Resized{width, height} => Some(Message::ResizedWindow(width, height)),
+                _ => None,
+            },
+            _ => None,
+        }),
         match self.render {
             RenderState::Board => match self.state {
                 GameState::Playing => time::every(Duration::from_secs(1)).map(|_| Message::Tick),
                 _ => Subscription::none(),
             },
             _ => Subscription::none(),
-        }
+        }])
     }
 
     fn view(&self) -> Element<Message> {
@@ -237,8 +250,8 @@ impl Application for Game {
                                 .width(Length::Fill)
                                 .height(Length::Fill),
                             )
-                            .width(self.real.size.mine() as u16)
-                            .height(self.real.size.mine() as u16)
+                            .width(self.real.size.mine())
+                            .height(self.real.size.mine())
                             .style(if (r + c) % 2 == 0 {
                                 self.real.colorscheme.light().into()
                             } else {
@@ -308,7 +321,7 @@ impl Application for Game {
                 .style(self.real.colorscheme.light());
 
                 let button_size = column!(
-                    text("Button Size").size(self.real.size.text()),
+                    text("Display Size").size(self.real.size.text()),
                     pick_list(Size::all_options(), Some(self.temp.size), |size| {
                         Message::UpdateSize(size)
                     })
@@ -336,7 +349,7 @@ impl Application for Game {
                     .padding(7.5)
                     .style(self.real.colorscheme.light().into());
 
-                let row = column!(
+                let menu = iced::widget::column!(
                     width_text,
                     width_slider,
                     height_text,
@@ -346,9 +359,10 @@ impl Application for Game {
                     pick_lists,
                     reset
                 )
-                .align_items(Alignment::Center);
+                .align_items(Alignment::Center)
+                .max_width(self.real.size.mine() * 20);
 
-                vec![row.into()]
+                vec![menu.into()]
             }
         };
 

@@ -7,7 +7,6 @@ use iced::{Background, Color};
 use std::fmt::{self, Display};
 use std::rc::Rc;
 
-#[derive(Clone, Copy)]
 pub struct SimpleStyle {
     back: Color,
     highlight_back: Color,
@@ -164,7 +163,7 @@ impl iced::overlay::menu::StyleSheet for SimpleStyle {
 
 impl From<SimpleStyle> for PickList {
     fn from(style: SimpleStyle) -> Self {
-        Self::Custom(Rc::new(style), Rc::new(style))
+        Self::Custom(Rc::new(SimpleStyle{..style}), Rc::new(style))
     }
 }
 
@@ -361,7 +360,7 @@ impl Size {
         }
     }
 
-    pub fn mine(&self) -> u32 {
+    pub fn mine(&self) -> u16 {
         match self {
             Self::XSmall => 25,
             Self::Small => 30,
