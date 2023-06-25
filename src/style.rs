@@ -1,16 +1,27 @@
 use iced::color;
-use iced::theme::{Button, Container, PickList, Scrollable, Slider, Theme};
+use iced::theme::{Button, Container, PickList, Scrollable, Slider, Svg, Theme};
 use iced::widget::slider::{Handle, HandleShape, Rail};
-use iced::widget::{button, container, pick_list, scrollable, slider};
+use iced::widget::{button, container, pick_list, scrollable, slider, svg};
 use iced::{Background, Color};
 
 use std::fmt::{self, Display};
 use std::rc::Rc;
 
+#[derive(Clone, Debug)]
 pub struct SimpleStyle {
     back: Color,
     highlight_back: Color,
     text: Color,
+}
+
+impl SimpleStyle {
+    pub fn reverse(&self) -> Self {
+        Self {
+            back: self.text,
+            highlight_back: self.highlight_back,
+            text: self.back,
+        }
+    }
 }
 
 impl iced::widget::button::StyleSheet for SimpleStyle {
@@ -163,7 +174,23 @@ impl iced::overlay::menu::StyleSheet for SimpleStyle {
 
 impl From<SimpleStyle> for PickList {
     fn from(style: SimpleStyle) -> Self {
-        Self::Custom(Rc::new(SimpleStyle { ..style }), Rc::new(style))
+        Self::Custom(Rc::new(style.clone()), Rc::new(style))
+    }
+}
+
+impl svg::StyleSheet for SimpleStyle {
+    type Style = Theme;
+
+    fn appearance(&self, _style: &Self::Style) -> svg::Appearance {
+        svg::Appearance {
+            color: Some(self.text),
+        }
+    }
+}
+
+impl From<SimpleStyle> for Svg {
+    fn from(value: SimpleStyle) -> Self {
+        Self::Custom(Box::new(value))
     }
 }
 
@@ -389,9 +416,9 @@ impl Size {
         match self {
             Self::XSmall => 15.0,
             Self::Small => 17.0,
-            Self::Medium => 19.0,
-            Self::Large => 21.0,
-            Self::XLarge => 23.0,
+            Self::Medium => 20.0,
+            Self::Large => 23.0,
+            Self::XLarge => 26.0,
         }
     }
 

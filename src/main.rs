@@ -1,4 +1,5 @@
 mod board;
+mod icons;
 mod style;
 
 use board::{Board, Tile};
@@ -7,7 +8,7 @@ use style::{ColorScheme, Size, TransparentStyle};
 use iced::alignment::{Horizontal, Vertical};
 use iced::theme::Theme;
 use iced::widget::{
-    button, column, container, mouse_area, pick_list, row, scrollable, slider, text, Button,
+    button, column, container, mouse_area, pick_list, row, scrollable, slider, svg, text, Button,
     Column, Row,
 };
 use iced::{executor, time};
@@ -22,12 +23,9 @@ const NUMBERS: &'static [&'static str] = &[" ", "1", "2", "3", "4", "5", "6", "7
 pub fn main() -> iced::Result {
     Game::run(iced::Settings {
         window: iced::window::Settings {
-            min_size: Some((450, 495)), // 10x10 on largest Size
+            min_size: Some((450, 500)), // 10x10 on largest Size
             ..iced::window::Settings::default()
         },
-        default_font: Some(include_bytes!(
-            "/home/p0l1t1c1an/.fonts/Hack/HackNerdFont-Bold.ttf"
-        )),
         default_text_size: 15.0,
         ..Settings::default()
     })
@@ -216,20 +214,30 @@ impl Application for Game {
                     let tiles = row
                         .enumerate()
                         .map(|(c, _col)| {
+                            let color = if (r + c) % 2 == 0 {
+                                self.real.colorscheme.light()
+                            } else {
+                                self.real.colorscheme.dark()
+                            };
+
                             let button = button(
-                                container(
-                                    text(match self.board.get_tile(r, c) {
-                                        Tile::Uncleared | Tile::UnclearedMine => " ",
-                                        Tile::Cleared => NUMBERS[self.board.adjacent_mines(r, c)],
-                                        Tile::ClearedMine => "󰚑",
-                                        Tile::Flagged | Tile::FlaggedMine => "󰈻",
-                                    })
-                                    .width(Length::Fill)
-                                    .height(Length::Fill)
-                                    .horizontal_alignment(Horizontal::Center)
-                                    .vertical_alignment(Vertical::Center)
-                                    .size(self.real.size.text()),
-                                )
+                                match self.board.get_tile(r, c) {
+                                    Tile::Uncleared | Tile::UnclearedMine => {
+                                        container(text(" ").size(self.real.size.text()))
+                                    }
+                                    Tile::Cleared => container(
+                                        text(NUMBERS[self.board.adjacent_mines(r, c)])
+                                            .size(self.real.size.text()),
+                                    ),
+                                    Tile::ClearedMine => container(
+                                        svg(svg::Handle::from_memory(icons::MINE))
+                                            .style(color.reverse().into()),
+                                    ),
+                                    Tile::Flagged | Tile::FlaggedMine => container(
+                                        svg(svg::Handle::from_memory(icons::FLAG))
+                                            .style(color.clone().into()),
+                                    ),
+                                }
                                 .center_x()
                                 .center_y()
                                 .width(Length::Fill)
@@ -237,11 +245,7 @@ impl Application for Game {
                             )
                             .width(self.real.size.mine())
                             .height(self.real.size.mine())
-                            .style(if (r + c) % 2 == 0 {
-                                self.real.colorscheme.light().into()
-                            } else {
-                                self.real.colorscheme.dark().into()
-                            });
+                            .style(color.into());
 
                             mouse_area(match self.board.get_tile(r, c) {
                                 Tile::Cleared | Tile::ClearedMine => button,
@@ -351,12 +355,30 @@ impl Application for Game {
             }
         };
 
-        let duration = text(format!(" {:0>4}", self.seconds)).size(self.real.size.text());
-        let count = text(format!(
-            "󰈻 {:0>3}",
-            self.board.mines_count() - self.board.flag_count()
-        ))
-        .size(self.real.size.text());
+        let duration = row!(
+            svg(svg::Handle::from_memory(icons::STOPWATCH))
+                .height(self.real.size.text())
+                .width(self.real.size.text())
+                .style(self.real.colorscheme.background().into()),
+            text(format!("{:0>4}", self.seconds)).size(self.real.size.text())
+        )
+        .align_items(Alignment::Center)
+        .spacing(5);
+
+        let count = row!(
+            svg(svg::Handle::from_memory(icons::FLAG))
+                .height(self.real.size.text())
+                .width(self.real.size.text())
+                .style(self.real.colorscheme.background().into()),
+            text(format!(
+                "{:0>3}",
+                self.board.mines_count() - self.board.flag_count()
+            ))
+            .size(self.real.size.text())
+        )
+        .height(self.real.size.mine())
+        .spacing(5)
+        .align_items(Alignment::Center);
 
         let menu = Button::new(
             container(text("Menu").size(self.real.size.text()))
@@ -370,8 +392,8 @@ impl Application for Game {
         .style(self.real.colorscheme.light().into());
 
         let top_row = row!(menu, duration, count)
-            .spacing(40)
-            .height(Length::Fixed(45.0))
+            .spacing(30)
+            .height(Length::Fixed(50.0))
             .align_items(Alignment::Center);
 
         let board = scrollable(Column::with_children(rows).align_items(Alignment::Center))
