@@ -34,9 +34,9 @@ pub fn main() -> iced::Result {
 #[derive(Clone, Copy, Debug)]
 struct VisualElements {
     size: Size,
-    slider_width: usize,
-    slider_height: usize,
-    slider_mines: usize,
+    slider_width: u32,
+    slider_height: u32,
+    slider_mines: u32,
     colorscheme: ColorScheme,
 }
 
@@ -84,9 +84,9 @@ enum Message {
     MiddleClick(usize, usize),
     RightClick(usize, usize),
     UpdateSize(Size),
-    UpdateSliderWidth(usize),
-    UpdateSliderHeight(usize),
-    UpdateSliderMines(usize),
+    UpdateSliderWidth(u32),
+    UpdateSliderHeight(u32),
+    UpdateSliderMines(u32),
     UpdateColorScheme(ColorScheme),
     Tick,
     Menu,
@@ -96,9 +96,9 @@ impl Game {
     fn reset(&mut self) {
         self.real = self.temp;
         self.board = Board::new(
-            self.real.slider_height,
-            self.real.slider_width,
-            self.real.slider_mines,
+            self.real.slider_height as usize,
+            self.real.slider_width as usize,
+            self.real.slider_mines as usize,
         );
         self.state = GameState::Playing;
         self.render = RenderState::Board;
@@ -272,8 +272,8 @@ impl Application for Game {
                         .size(self.real.size.text()),
                 )
                 .padding(10);
-                let width_slider = slider(5..=50, self.temp.slider_width as u32, |t| {
-                    Message::UpdateSliderWidth(t as usize)
+                let width_slider = slider(5..=50, self.temp.slider_width, |t| {
+                    Message::UpdateSliderWidth(t)
                 })
                 .style(self.real.colorscheme.light());
 
@@ -288,8 +288,8 @@ impl Application for Game {
                         .size(self.real.size.text()),
                 )
                 .padding(10);
-                let height_slider = slider(5..=50, self.temp.slider_height as u32, |t| {
-                    Message::UpdateSliderHeight(t as usize)
+                let height_slider = slider(5..=50, self.temp.slider_height, |t| {
+                    Message::UpdateSliderHeight(t)
                 })
                 .style(self.real.colorscheme.light());
 
@@ -304,8 +304,8 @@ impl Application for Game {
                         .size(self.real.size.text()),
                 )
                 .padding(10);
-                let mines_slider = slider(0..=500, self.temp.slider_mines as u32, |t| {
-                    Message::UpdateSliderMines(t as usize)
+                let mines_slider = slider(0..=500, self.temp.slider_mines, |t| {
+                    Message::UpdateSliderMines(t)
                 })
                 .style(self.real.colorscheme.light());
 
