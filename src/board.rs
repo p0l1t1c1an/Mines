@@ -23,6 +23,12 @@ pub struct Board {
     flag_count: usize,
 }
 
+impl Default for Board {
+    fn default() -> Self {
+        Self::new(10, 10, 10)
+    }
+}
+
 impl Board {
     pub fn new(r: usize, c: usize, n: usize) -> Self {
         let mut grid: Grid<Tile> = Grid::new(r, c);
