@@ -86,6 +86,7 @@ impl iced::widget::slider::StyleSheet for SimpleStyle {
             rail: Rail {
                 colors: (self.back, self.text),
                 width: 5.0,
+                border_radius: Default::default(),
             },
             handle: Handle {
                 shape: HandleShape::Circle { radius: 7.5 },
@@ -107,6 +108,7 @@ impl iced::widget::slider::StyleSheet for SimpleStyle {
             rail: Rail {
                 colors: (self.back, self.text),
                 width: 5.0,
+                border_radius: Default::default(),
             },
             handle: Handle {
                 shape: HandleShape::Circle { radius: 7.5 },
@@ -137,7 +139,7 @@ impl pick_list::StyleSheet for SimpleStyle {
             placeholder_color: self.highlight_back,
             handle_color: self.text,
             background: Background::Color(self.back),
-            border_radius: 0.0,
+            border_radius: Default::default(),
             border_width: 0.0,
             border_color: self.text,
         }
@@ -149,7 +151,7 @@ impl pick_list::StyleSheet for SimpleStyle {
             placeholder_color: self.back,
             handle_color: self.text,
             background: Background::Color(self.highlight_back),
-            border_radius: 0.0,
+            border_radius: Default::default(),
             border_width: 0.0,
             border_color: self.text,
         }
@@ -163,7 +165,7 @@ impl iced::overlay::menu::StyleSheet for SimpleStyle {
         iced::overlay::menu::Appearance {
             text_color: self.text,
             background: Background::Color(self.back),
-            border_radius: 0.0,
+            border_radius: Default::default(),
             border_width: 0.0,
             border_color: self.text,
             selected_text_color: self.text,
@@ -202,12 +204,12 @@ impl scrollable::StyleSheet for TransparentStyle {
     fn active(&self, _style: &Self::Style) -> scrollable::Scrollbar {
         scrollable::Scrollbar {
             background: None,
-            border_radius: 0.0,
+            border_radius: Default::default(),
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
             scroller: scrollable::Scroller {
                 color: Color::TRANSPARENT,
-                border_radius: 0.0,
+                border_radius: Default::default(),
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             },

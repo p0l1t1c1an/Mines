@@ -397,7 +397,7 @@ impl Application for Game {
             .align_items(Alignment::Center);
 
         let board = scrollable(Column::with_children(rows).align_items(Alignment::Center))
-            .horizontal_scroll(scrollable::Properties::default())
+            //.horizontal_scroll(scrollable::Properties::default())
             .style(TransparentStyle);
 
         let content = container(column!(top_row, board).align_items(Alignment::Center))
@@ -410,7 +410,8 @@ impl Application for Game {
         if let RenderState::Board = self.render {
             match self.state {
                 GameState::Playing => content.into(),
-                _ => FloatingElement::new(content, || {
+                _ => FloatingElement::new(
+                    content,
                     container(
                         column!(
                             text(if let GameState::Won = self.state {
@@ -429,9 +430,8 @@ impl Application for Game {
                         .padding(20)
                         .align_items(Alignment::Center),
                     )
-                    .style(self.real.colorscheme.background())
-                    .into()
-                })
+                    .style(self.real.colorscheme.background()),
+                )
                 .anchor(Anchor::North)
                 .offset(Offset { x: 0.0, y: 60.0 })
                 .into(),
