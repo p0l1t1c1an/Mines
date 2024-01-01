@@ -3,6 +3,7 @@ mod icons;
 mod style;
 
 use board::{Board, Tile};
+use iced::widget::scrollable::{Direction, Properties};
 use style::{ColorScheme, Size, TransparentStyle};
 
 use iced::alignment::{Horizontal, Vertical};
@@ -397,7 +398,7 @@ impl Application for Game {
             .align_items(Alignment::Center);
 
         let board = scrollable(Column::with_children(rows).align_items(Alignment::Center))
-            //.horizontal_scroll(scrollable::Properties::default())
+            .direction(Direction::Both {vertical: Properties::default(), horizontal: Properties::default()})
             .style(TransparentStyle);
 
         let content = container(column!(top_row, board).align_items(Alignment::Center))
